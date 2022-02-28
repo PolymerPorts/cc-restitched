@@ -5,7 +5,6 @@
  */
 package dan200.computercraft.shared.turtle.upgrades;
 
-import dan200.computercraft.api.client.TransformedModel;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.turtle.*;
 import dan200.computercraft.shared.peripheral.modem.ModemState;
@@ -103,25 +102,6 @@ public class TurtleModem extends AbstractTurtleUpgrade
     public TurtleCommandResult useTool( @Nonnull ITurtleAccess turtle, @Nonnull TurtleSide side, @Nonnull TurtleVerb verb, @Nonnull Direction dir )
     {
         return TurtleCommandResult.failure();
-    }
-
-    @Nonnull
-    @Override
-    @Environment( EnvType.CLIENT )
-    public TransformedModel getModel( ITurtleAccess turtle, @Nonnull TurtleSide side )
-    {
-        if( models == null ) models = new Models();
-
-        boolean active = false;
-        if( turtle != null )
-        {
-            CompoundTag turtleNBT = turtle.getUpgradeNBTData( side );
-            active = turtleNBT.contains( "active" ) && turtleNBT.getBoolean( "active" );
-        }
-
-        return side == TurtleSide.LEFT
-            ? TransformedModel.of( active ? models.leftOnModel : models.leftOffModel )
-            : TransformedModel.of( active ? models.rightOnModel : models.rightOffModel );
     }
 
     @Override

@@ -12,11 +12,6 @@ import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.LuaTable;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
-import dan200.computercraft.shared.network.NetworkHandler;
-import dan200.computercraft.shared.network.client.SpeakerAudioClientMessage;
-import dan200.computercraft.shared.network.client.SpeakerMoveClientMessage;
-import dan200.computercraft.shared.network.client.SpeakerPlayClientMessage;
-import dan200.computercraft.shared.network.client.SpeakerStopClientMessage;
 import dan200.computercraft.shared.util.PauseAwareTimer;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.core.BlockPos;
@@ -116,7 +111,7 @@ public abstract class SpeakerPeripheral implements IPeripheral
         if( shouldStop && lastPosition != null )
         {
             lastPosition = null;
-            NetworkHandler.sendToAllPlayers( new SpeakerStopClientMessage( getSource() ) );
+            //NetworkHandler.sendToAllPlayers( new SpeakerStopClientMessage( getSource() ) );
             return;
         }
 
@@ -124,20 +119,20 @@ public abstract class SpeakerPeripheral implements IPeripheral
         if( sound != null )
         {
             lastPlayTime = clock;
-            NetworkHandler.sendToAllAround(
+            /*NetworkHandler.sendToAllAround(
                 new SpeakerPlayClientMessage( getSource(), pos, sound.location, sound.volume, sound.pitch ),
                 level, pos, sound.volume * 16
-            );
+            );*/
             syncedPosition( pos );
         }
         else if( dfpwmState != null && dfpwmState.shouldSendPending( now ) )
         {
             // If clients need to receive another batch of audio, send it and then notify computers our internal buffer is
             // free again.
-            NetworkHandler.sendToAllTracking(
+            /*NetworkHandler.sendToAllTracking(
                 new SpeakerAudioClientMessage( getSource(), pos, dfpwmState.getVolume(), dfpwmState.pullPending( now ) ),
                 getLevel().getChunkAt( new BlockPos( pos ) )
-            );
+            );*/
             syncedPosition( pos );
 
             // And notify computers that we have space for more audio.
@@ -158,10 +153,10 @@ public abstract class SpeakerPeripheral implements IPeripheral
             Vec3 position = getPosition();
             if( lastPosition.distanceToSqr( position ) >= 0.1 )
             {
-                NetworkHandler.sendToAllTracking(
+                /*NetworkHandler.sendToAllTracking(
                     new SpeakerMoveClientMessage( getSource(), position ),
                     getLevel().getChunkAt( new BlockPos( position ) )
-                );
+                );*/
                 syncedPosition( position );
             }
         }

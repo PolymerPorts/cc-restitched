@@ -8,24 +8,16 @@ package dan200.computercraft.shared;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.ComputerCraftTags;
-import dan200.computercraft.shared.common.ContainerHeldItem;
 import dan200.computercraft.shared.computer.blocks.BlockComputer;
 import dan200.computercraft.shared.computer.blocks.TileCommandComputer;
 import dan200.computercraft.shared.computer.blocks.TileComputer;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
-import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
-import dan200.computercraft.shared.computer.inventory.ContainerComputerBase;
-import dan200.computercraft.shared.computer.inventory.ContainerViewComputer;
 import dan200.computercraft.shared.computer.items.ItemComputer;
 import dan200.computercraft.shared.media.items.ItemDisk;
 import dan200.computercraft.shared.media.items.ItemPrintout;
 import dan200.computercraft.shared.media.items.ItemTreasureDisk;
-import dan200.computercraft.shared.network.container.ComputerContainerData;
-import dan200.computercraft.shared.network.container.ContainerData;
-import dan200.computercraft.shared.network.container.HeldItemContainerData;
-import dan200.computercraft.shared.network.container.ViewComputerContainerData;
+
 import dan200.computercraft.shared.peripheral.diskdrive.BlockDiskDrive;
-import dan200.computercraft.shared.peripheral.diskdrive.ContainerDiskDrive;
 import dan200.computercraft.shared.peripheral.diskdrive.TileDiskDrive;
 import dan200.computercraft.shared.peripheral.modem.wired.*;
 import dan200.computercraft.shared.peripheral.modem.wireless.BlockWirelessModem;
@@ -33,7 +25,6 @@ import dan200.computercraft.shared.peripheral.modem.wireless.TileWirelessModem;
 import dan200.computercraft.shared.peripheral.monitor.BlockMonitor;
 import dan200.computercraft.shared.peripheral.monitor.TileMonitor;
 import dan200.computercraft.shared.peripheral.printer.BlockPrinter;
-import dan200.computercraft.shared.peripheral.printer.ContainerPrinter;
 import dan200.computercraft.shared.peripheral.printer.TilePrinter;
 import dan200.computercraft.shared.peripheral.speaker.BlockSpeaker;
 import dan200.computercraft.shared.peripheral.speaker.TileSpeaker;
@@ -43,22 +34,23 @@ import dan200.computercraft.shared.pocket.peripherals.PocketSpeaker;
 import dan200.computercraft.shared.turtle.blocks.BlockTurtle;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import dan200.computercraft.shared.turtle.core.TurtlePlayer;
-import dan200.computercraft.shared.turtle.inventory.ContainerTurtle;
 import dan200.computercraft.shared.turtle.items.ItemTurtle;
 import dan200.computercraft.shared.turtle.upgrades.TurtleCraftingTable;
 import dan200.computercraft.shared.turtle.upgrades.TurtleModem;
 import dan200.computercraft.shared.turtle.upgrades.TurtleSpeaker;
 import dan200.computercraft.shared.turtle.upgrades.TurtleTool;
+import eu.pb4.polymer.api.block.PolymerBlock;
+import eu.pb4.polymer.api.block.PolymerBlockUtils;
+import eu.pb4.polymer.api.entity.PolymerEntityUtils;
+import eu.pb4.polymer.api.item.PolymerBlockItem;
+import eu.pb4.polymer.api.item.PolymerHeadBlockItem;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -85,8 +77,7 @@ public final class Registry
             ModBlockEntities.CABLE,
             ModBlocks.CABLE,
             ModItems.CABLE,
-            ModEntities.TURTLE_PLAYER,
-            ModContainers.COMPUTER,
+            ModEntities.TURTLE_PLAYER
         };
 
         TurtleUpgrades.registerTurtleUpgrades();
@@ -104,10 +95,10 @@ public final class Registry
         }
 
         public static final BlockMonitor MONITOR_NORMAL =
-            register( "monitor_normal", new BlockMonitor( properties(), () -> ModBlockEntities.MONITOR_NORMAL ) );
+            register( "monitor_normal", new BlockMonitor( properties(), () -> ModBlockEntities.MONITOR_NORMAL, Blocks.SMOOTH_STONE ) );
 
         public static final BlockMonitor MONITOR_ADVANCED =
-            register( "monitor_advanced", new BlockMonitor( properties(), () -> ModBlockEntities.MONITOR_ADVANCED ) );
+            register( "monitor_advanced", new BlockMonitor( properties(), () -> ModBlockEntities.MONITOR_ADVANCED, Blocks.GOLD_BLOCK ) );
 
         public static final BlockComputer<TileComputer> COMPUTER_NORMAL =
             register( "computer_normal", new BlockComputer<>( properties(), ComputerFamily.NORMAL, () -> ModBlockEntities.COMPUTER_NORMAL ) );
@@ -166,7 +157,9 @@ public final class Registry
         private static <T extends BlockEntity> BlockEntityType<T> ofBlock( Block block, String id, BiFunction<BlockPos, BlockState, T> factory )
         {
             BlockEntityType<T> blockEntityType = FabricBlockEntityTypeBuilder.create( factory::apply, block ).build();
-            return net.minecraft.core.Registry.register( BLOCK_ENTITY_TYPE, new ResourceLocation( MOD_ID, id ), blockEntityType );
+            net.minecraft.core.Registry.register( BLOCK_ENTITY_TYPE, new ResourceLocation( MOD_ID, id ), blockEntityType );
+            PolymerBlockUtils.registerBlockEntity(blockEntityType);
+            return blockEntityType;
         }
 
         public static final BlockEntityType<TileMonitor> MONITOR_NORMAL =
@@ -253,28 +246,28 @@ public final class Registry
             register( "printed_book", new ItemPrintout( properties().stacksTo( 1 ), ItemPrintout.Type.BOOK ) );
 
         public static final BlockItem SPEAKER =
-            ofBlock( ModBlocks.SPEAKER, BlockItem::new );
+            ofBlock( ModBlocks.SPEAKER, PolymerHeadBlockItem::new );
 
         public static final BlockItem DISK_DRIVE =
-            ofBlock( ModBlocks.DISK_DRIVE, BlockItem::new );
+            ofBlock( ModBlocks.DISK_DRIVE, PolymerHeadBlockItem::new );
 
         public static final BlockItem PRINTER =
-            ofBlock( ModBlocks.PRINTER, BlockItem::new );
+            ofBlock( ModBlocks.PRINTER, PolymerHeadBlockItem::new );
 
         public static final BlockItem MONITOR_NORMAL =
-            ofBlock( ModBlocks.MONITOR_NORMAL, BlockItem::new );
+            ofBlock( ModBlocks.MONITOR_NORMAL, (block, properties) -> new PolymerBlockItem(block, properties, block.getPolymerBlock(block.defaultBlockState()).asItem()) );
 
         public static final BlockItem MONITOR_ADVANCED =
-            ofBlock( ModBlocks.MONITOR_ADVANCED, BlockItem::new );
+            ofBlock( ModBlocks.MONITOR_ADVANCED, (block, properties) -> new PolymerBlockItem(block, properties, block.getPolymerBlock(block.defaultBlockState()).asItem()) );
 
         public static final BlockItem WIRELESS_MODEM_NORMAL =
-            ofBlock( ModBlocks.WIRELESS_MODEM_NORMAL, BlockItem::new );
+            ofBlock( ModBlocks.WIRELESS_MODEM_NORMAL, PolymerHeadBlockItem::new );
 
         public static final BlockItem WIRELESS_MODEM_ADVANCED =
-            ofBlock( ModBlocks.WIRELESS_MODEM_ADVANCED, BlockItem::new );
+            ofBlock( ModBlocks.WIRELESS_MODEM_ADVANCED, PolymerHeadBlockItem::new );
 
         public static final BlockItem WIRED_MODEM_FULL =
-            ofBlock( ModBlocks.WIRED_MODEM_FULL, BlockItem::new );
+            ofBlock( ModBlocks.WIRED_MODEM_FULL, PolymerHeadBlockItem::new );
 
         public static final ItemBlockCable.Cable CABLE =
             register( "cable", new ItemBlockCable.Cable( ModBlocks.CABLE, properties() ) );
@@ -304,37 +297,9 @@ public final class Registry
         public static final EntityType<TurtlePlayer> TURTLE_PLAYER =
             net.minecraft.core.Registry.register( net.minecraft.core.Registry.ENTITY_TYPE, new ResourceLocation( MOD_ID, "turtle_player" ),
                 EntityType.Builder.<TurtlePlayer>createNothing( MobCategory.MISC ).noSave().noSummon().sized( 0, 0 ).build( ComputerCraft.MOD_ID + ":turtle_player" ) );
-    }
 
-    public static class ModContainers
-    {
-        public static final MenuType<ContainerComputerBase> COMPUTER =
-            ContainerData.toType( new ResourceLocation( MOD_ID, "computer" ), ModContainers.COMPUTER, ComputerContainerData::new, ComputerMenuWithoutInventory::new );
-
-        public static final MenuType<ContainerComputerBase> POCKET_COMPUTER =
-            ContainerData.toType( new ResourceLocation( MOD_ID, "pocket_computer" ), ModContainers.POCKET_COMPUTER, ComputerContainerData::new, ComputerMenuWithoutInventory::new );
-
-        public static final MenuType<ContainerComputerBase> POCKET_COMPUTER_NO_TERM =
-            ContainerData.toType( new ResourceLocation( MOD_ID, "pocket_computer_no_term" ), ModContainers.POCKET_COMPUTER_NO_TERM, ComputerContainerData::new, ComputerMenuWithoutInventory::new );
-
-        public static final MenuType<ContainerTurtle> TURTLE =
-            ContainerData.toType( new ResourceLocation( MOD_ID, "turtle" ), ComputerContainerData::new, ContainerTurtle::new );
-
-        public static final MenuType<ContainerDiskDrive> DISK_DRIVE =
-            registerSimple( "disk_drive", ContainerDiskDrive::new );
-
-        public static final MenuType<ContainerPrinter> PRINTER =
-            registerSimple( "printer", ContainerPrinter::new );
-
-        public static final MenuType<ContainerHeldItem> PRINTOUT =
-            ContainerData.toType( new ResourceLocation( MOD_ID, "printout" ), HeldItemContainerData::new, ContainerHeldItem::createPrintout );
-
-        public static final MenuType<ContainerViewComputer> VIEW_COMPUTER =
-            ContainerData.toType( new ResourceLocation( MOD_ID, "view_computer" ), ViewComputerContainerData::new, ContainerViewComputer::new );
-
-        private static <T extends AbstractContainerMenu> MenuType<T> registerSimple( String id, ScreenHandlerRegistry.SimpleClientHandlerFactory<T> function )
-        {
-            return ScreenHandlerRegistry.registerSimple( new ResourceLocation( MOD_ID, id ), function );
+        static {
+            PolymerEntityUtils.registerType(TURTLE_PLAYER);
         }
     }
 

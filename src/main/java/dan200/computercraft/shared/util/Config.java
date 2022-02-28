@@ -16,7 +16,6 @@ import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.core.apis.http.options.Action;
 import dan200.computercraft.core.apis.http.options.AddressRuleConfig;
 import dan200.computercraft.fabric.mixin.LevelResourceAccess;
-import dan200.computercraft.shared.peripheral.monitor.MonitorRenderer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
@@ -227,11 +226,6 @@ public final class Config
 
         clientSpec = new CommentedConfigSpec();
 
-        clientSpec.comment( "monitor_renderer",
-            "The renderer to use for monitors. Generally this should be kept at \"best\" - if " +
-                "monitors have performance issues, you may wish to experiment with alternative renderers." );
-        clientSpec.defineRestrictedEnum( "monitor_renderer", MonitorRenderer.BEST, EnumSet.allOf( MonitorRenderer.class ), EnumGetMethod.NAME_IGNORECASE );
-
         clientSpec.comment( "monitor_distance",
             "The maximum distance monitors will render at. This defaults to the standard tile entity limit, " +
                 "but may be extended if you wish to build larger monitors." );
@@ -377,7 +371,6 @@ public final class Config
         // Client
         if( clientConfig != null )
         {
-            ComputerCraft.monitorRenderer = clientConfig.getEnum( "monitor_renderer", MonitorRenderer.class );
             ComputerCraft.monitorDistance = clientConfig.get( "monitor_distance" );
         }
     }

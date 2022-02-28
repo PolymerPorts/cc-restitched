@@ -13,6 +13,7 @@ import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.util.DirectionUtil;
 import dan200.computercraft.shared.util.InventoryUtil;
 import dan200.computercraft.shared.util.WorldUtil;
+import eu.pb4.polymer.api.entity.PolymerEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -35,7 +36,7 @@ import javax.annotation.Nullable;
 import java.util.OptionalInt;
 import java.util.UUID;
 
-public final class TurtlePlayer extends FakePlayer
+public final class TurtlePlayer extends FakePlayer implements PolymerEntity
 {
     private static final GameProfile DEFAULT_PROFILE = new GameProfile(
         UUID.fromString( "0d0c4ca0-4ff1-11e4-916c-0800200c9a66" ),
@@ -274,6 +275,11 @@ public final class TurtlePlayer extends FakePlayer
     @Override
     protected void onEffectRemoved( @Nonnull MobEffectInstance effect )
     {
+    }
+
+    @Override
+    public EntityType<?> getPolymerEntityType() {
+        return EntityType.PLAYER;
     }
     //endregion
 }

@@ -16,11 +16,14 @@ import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.util.DefaultInventory;
 import dan200.computercraft.shared.util.InventoryUtil;
 import dan200.computercraft.shared.util.RecordUtil;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,10 +33,14 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -42,7 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public final class TileDiskDrive extends TileGeneric implements IPeripheralTile, DefaultInventory, Nameable, MenuProvider
+public final class TileDiskDrive extends TileGeneric implements IPeripheralTile, DefaultInventory, Nameable
 {
     private static final String NBT_NAME = "CustomName";
     private static final String NBT_ITEM = "Item";
@@ -86,20 +93,47 @@ public final class TileDiskDrive extends TileGeneric implements IPeripheralTile,
         {
             // Try to put a disk into the drive
             ItemStack disk = player.getItemInHand( hand );
-            if( disk.isEmpty() ) return InteractionResult.PASS;
-            if( !getLevel().isClientSide && getItem( 0 ).isEmpty() && MediaProviders.get( disk ) != null )
-            {
-                setDiskStack( disk );
-                player.setItemInHand( hand, ItemStack.EMPTY );
+            if(!disk.isEmpty() && getItem(0).isEmpty() && MediaProviders.get(disk) != null) {
+                setDiskStack(disk);
+                player.setItemInHand(hand, ItemStack.EMPTY);
+                return InteractionResult.SUCCESS;
+            } else if (disk.isEmpty() && !getItem( 0).isEmpty()) {
+                player.setItemInHand(hand, getItem( 0));
+                setDiskStack(ItemStack.EMPTY);
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
-        }
-        else
-        {
+            return InteractionResult.PASS;
+        } else {
             // Open the GUI
-            if( !getLevel().isClientSide ) player.openMenu( this );
+            this.openMenu((ServerPlayer) player);
             return InteractionResult.SUCCESS;
         }
+    }
+
+    private void openMenu(ServerPlayer player) {
+        var gui = new SimpleGui(MenuType.HOPPER, player, false);
+        gui.setTitle(this.getDisplayName());
+        var empty = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
+        empty.setHoverName(TextComponent.EMPTY);
+
+        gui.setSlot(0, empty);
+        gui.setSlot(1, empty);
+        gui.setSlot(3, empty);
+        gui.setSlot(4, empty);
+
+        gui.setSlotRedirect(2, new Slot(this, 0, 0, 0) {
+            @Override
+            public boolean mayPlace(ItemStack itemStack) {
+                return MediaProviders.get(itemStack) != null;
+            }
+
+            @Override
+            public int getMaxStackSize(ItemStack itemStack) {
+                return 1;
+            }
+        });
+
+        gui.open();
     }
 
     public Direction getDirection()
@@ -530,12 +564,5 @@ public final class TileDiskDrive extends TileGeneric implements IPeripheralTile,
     public Component getDisplayName()
     {
         return Nameable.super.getDisplayName();
-    }
-
-    @Nonnull
-    @Override
-    public AbstractContainerMenu createMenu( int id, @Nonnull Inventory inventory, @Nonnull Player player )
-    {
-        return new ContainerDiskDrive( id, inventory, this );
     }
 }

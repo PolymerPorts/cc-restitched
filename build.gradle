@@ -3,7 +3,7 @@ plugins {
     id "jacoco"
     id "maven-publish"
     id "com.github.hierynomus.license" version "0.16.1"
-    id "org.jetbrains.kotlin.jvm" version "1.5.21"
+    //id "org.jetbrains.kotlin.jvm" version "1.5.21"
     id 'fabric-loom' version '0.10-SNAPSHOT'
 }
 
@@ -23,7 +23,7 @@ tasks.withType(JavaExec).configureEach {
     }
 }
 
-version = mod_version
+version = project.mod_version + "-polymerport." + project.sub_version
 
 group = "dan200.computercraft"
 archivesBaseName = "cc-restitched"
@@ -50,6 +50,8 @@ repositories {
     // TODO: Limit these to a set of groups.
     maven { url "https://maven.shedaniel.me/" }
     maven { url "https://maven.terraformersmc.com/" }
+    maven { url = "https://maven.nucleoid.xyz" }
+    //mavenLocal()
 }
 
 configurations {
@@ -86,14 +88,20 @@ dependencies {
     //modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:6.0.254-alpha"
     //modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-fabric:6.0.254-alpha"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    /*testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21'
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1'*/
 
     cctJavadoc 'cc.tweaked:cct-javadoc:1.4.2'
+
+    modImplementation include("eu.pb4:sgui:1.0.0+1.18.1")
+    modImplementation include("eu.pb4:hologram-api:0.2.1+1.18-pre5")
+    modImplementation include("eu.pb4:polymer:0.2.0-beta.27+1.18.1")
+    modImplementation include("fr.catcore:server-translations-api:1.4.8+1.18-pre1")
+    modImplementation include("eu.pb4:map-canvas-api:0.1.0+1.18.1")
 }
 
 processResources {

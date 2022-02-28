@@ -8,14 +8,15 @@ package dan200.computercraft.shared.peripheral.modem.wireless;
 import dan200.computercraft.shared.common.BlockGeneric;
 import dan200.computercraft.shared.peripheral.modem.ModemShapes;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
+import eu.pb4.polymer.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.api.utils.PolymerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -33,7 +34,7 @@ import java.util.function.Supplier;
 import static dan200.computercraft.shared.util.WaterloggableHelpers.WATERLOGGED;
 import static dan200.computercraft.shared.util.WaterloggableHelpers.getFluidStateForPlacement;
 
-public class BlockWirelessModem extends BlockGeneric implements SimpleWaterloggedBlock
+public class BlockWirelessModem extends BlockGeneric implements SimpleWaterloggedBlock, PolymerHeadBlock
 {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty ON = BooleanProperty.create( "on" );
@@ -95,5 +96,23 @@ public class BlockWirelessModem extends BlockGeneric implements SimpleWaterlogge
         return defaultBlockState()
             .setValue( FACING, placement.getClickedFace().getOpposite() )
             .setValue( WATERLOGGED, getFluidStateForPlacement( placement ) );
+    }
+
+    @Override
+    public String getPolymerSkinValue(BlockState state) {
+        return PolymerUtils.NO_TEXTURE_HEAD_VALUE;
+    }
+
+    @Override
+    public Block getPolymerBlock(BlockState state) {
+        return state.getValue(FACING).getAxis() != Direction.Axis.Y ? Blocks.PLAYER_WALL_HEAD : Blocks.PLAYER_HEAD;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState state) {
+        var dir = state.getValue(FACING);
+        return dir.getAxis() != Direction.Axis.Y
+            ? Blocks.PLAYER_WALL_HEAD.defaultBlockState().setValue(WallSkullBlock.FACING, dir)
+            : Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, dir.getStepY() == 1 ? 0 : 2);
     }
 }

@@ -9,21 +9,20 @@ import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.IPeripheralTile;
 import dan200.computercraft.core.computer.ComputerSide;
+import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
+import dan200.computercraft.fabric.poly.ComputerGui;
 import dan200.computercraft.shared.BundledRedstone;
 import dan200.computercraft.shared.Peripherals;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ComputerState;
 import dan200.computercraft.shared.computer.core.ServerComputer;
-import dan200.computercraft.shared.network.container.ComputerContainerData;
 import dan200.computercraft.shared.util.DirectionUtil;
 import dan200.computercraft.shared.util.RedstoneUtil;
 import joptsimple.internal.Strings;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -43,7 +42,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-public abstract class TileComputerBase extends TileGeneric implements IComputerTile, IPeripheralTile, Nameable, ExtendedScreenHandlerFactory
+public abstract class TileComputerBase extends TileGeneric implements IComputerTile, IPeripheralTile, Nameable, ComputerDisplayAccess
 {
     private static final String NBT_ID = "ComputerId";
     private static final String NBT_LABEL = "Label";
@@ -61,6 +60,7 @@ public abstract class TileComputerBase extends TileGeneric implements IComputerT
     private final ComputerFamily family;
 
     private ComputerProxy proxy;
+
 
     public TileComputerBase( BlockEntityType<? extends TileGeneric> type, BlockPos pos, BlockState state, ComputerFamily family )
     {
@@ -127,7 +127,7 @@ public abstract class TileComputerBase extends TileGeneric implements IComputerT
             {
                 createServerComputer().turnOn();
                 createServerComputer().sendTerminalState( player );
-                new ComputerContainerData( createServerComputer() ).open( player, this );
+                ComputerGui.open((ServerPlayer) player, this);
             }
             return InteractionResult.SUCCESS;
         }
@@ -456,9 +456,12 @@ public abstract class TileComputerBase extends TileGeneric implements IComputerT
     }
 
     @Override
-    public void writeScreenOpeningData( ServerPlayer serverPlayerEntity, FriendlyByteBuf packetByteBuf )
-    {
-        packetByteBuf.writeInt( getServerComputer().getInstanceID() );
-        packetByteBuf.writeEnum( getServerComputer().getFamily() );
+    public ServerComputer getComputer() {
+        return this.getServerComputer();
+    }
+
+    @Override
+    public boolean canStayOpen(ServerPlayer player) {
+        return this.getBlockPos().distSqr(player.blockPosition()) < 64;
     }
 }

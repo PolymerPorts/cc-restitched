@@ -14,10 +14,18 @@ import dan200.computercraft.shared.common.ServerTerminal;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.network.client.TerminalState;
 import dan200.computercraft.shared.util.TickScheduler;
+import eu.pb4.mapcanvas.api.core.CanvasColor;
+import eu.pb4.mapcanvas.api.core.CanvasImage;
+import eu.pb4.mapcanvas.api.core.DrawableCanvas;
+import eu.pb4.mapcanvas.api.core.PlayerCanvas;
+import eu.pb4.mapcanvas.api.utils.CanvasUtils;
+import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -30,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -48,7 +57,6 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     private final boolean advanced;
 
     private ServerMonitor serverMonitor;
-    private ClientMonitor clientMonitor;
     private MonitorPeripheral peripheral;
     private final Set<IComputerAccess> computers = new HashSet<>();
 
@@ -65,11 +73,73 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     private int xIndex = 0;
     private int yIndex = 0;
 
+    private PlayerCanvas canvas = null;
+    private VirtualDisplay display = null;
+    private Set<ServerPlayer> currentWatchers = new HashSet<>();
+
     public TileMonitor( BlockEntityType<? extends TileMonitor> type, BlockPos pos, BlockState state, boolean advanced )
     {
         super( type, pos, state );
         this.advanced = advanced;
+
+        this.updateDisplaySize();
     }
+
+    private void updateDisplaySize() {
+        if (this.display != null) {
+            this.display.destroy();
+        }
+        if (this.canvas != null) {
+            this.canvas.destroy();
+        }
+
+        this.currentWatchers.clear();
+
+        if (this.xIndex == 0 && this.yIndex == 0) {
+            var dir = this.getBlockState().getValue(BlockMonitor.FACING);
+            this.canvas = DrawableCanvas.create(this.width, this.height);
+            this.display = VirtualDisplay.of(this.canvas, this.getBlockPos().relative(dir).above(this.height - 1), dir, 0, true);
+            this.updateDisplay();
+        }
+    }
+
+    private void updateDisplay() {
+        {
+            var image = new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight());
+            CanvasUtils.clear(image, CanvasColor.BLACK_LOW);
+
+            var monitor = this.getServerMonitor();
+            if (monitor != null) {
+                CanvasUtils.draw(image, 0, 0, 128 * this.width, 128 * this.height, monitor.getTerminal().getRendered(this.level.getGameTime()));
+            }
+
+            CanvasUtils.draw(this.canvas, 0, 0, image);
+        }
+
+        if (this.level != null) {
+            var pos = this.getBlockPos();
+            var players = ((ServerLevel) this.level).getPlayers((p) -> p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 4096);
+
+            for (var player : players) {
+                if (!this.currentWatchers.contains(player)) {
+                    this.display.addPlayer(player);
+                    this.canvas.addPlayer(player);
+                    this.currentWatchers.add(player);
+                }
+            }
+
+            for (var player : new ArrayList<>(this.currentWatchers)) {
+                if (!players.contains(player)) {
+                    this.display.removePlayer(player);
+                    this.canvas.removePlayer(player);
+                    this.currentWatchers.remove(player);
+                }
+            }
+
+            this.canvas.sendUpdates();
+        }
+    }
+
 
     @Override
     public void clearRemoved() // TODO: Switch back to onLood
@@ -86,20 +156,22 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
         if( destroyed ) return;
         destroyed = true;
         if( !getLevel().isClientSide ) contractNeighbours();
+        if (this.display != null) {
+            this.display.destroy();
+            this.canvas.destroy();
+        }
     }
 
     @Override
     public void setRemoved()
     {
         super.setRemoved();
-        if( clientMonitor != null && xIndex == 0 && yIndex == 0 ) clientMonitor.destroy();
     }
 
     @Override
     public void onChunkUnloaded()
     {
         super.onChunkUnloaded();
-        if( clientMonitor != null && xIndex == 0 && yIndex == 0 ) clientMonitor.destroy();
     }
 
     @Nonnull
@@ -145,21 +217,9 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
         width = nbt.getInt( NBT_WIDTH );
         height = nbt.getInt( NBT_HEIGHT );
 
-        if( level != null && level.isClientSide )
+        if( level != null )
         {
-            if( oldXIndex != xIndex || oldYIndex != yIndex )
-            {
-                // If our index has changed then it's possible the origin monitor has changed. Thus
-                // we'll clear our cache. If we're the origin then we'll need to remove the glList as well.
-                if( oldXIndex == 0 && oldYIndex == 0 && clientMonitor != null ) clientMonitor.destroy();
-                clientMonitor = null;
-            }
-
-            if( xIndex == 0 && yIndex == 0 )
-            {
-                // If we're the origin terminal then create it.
-                if( clientMonitor == null ) clientMonitor = new ClientMonitor( advanced, this );
-            }
+            this.updateDisplaySize();
         }
     }
 
@@ -184,6 +244,8 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
 
         if( serverMonitor.pollResized() ) eachComputer( c -> c.queueEvent( "monitor_resize", c.getAttachmentName() ) );
         if( serverMonitor.pollTerminalChanged() ) MonitorWatcher.enqueue( this );
+
+        this.updateDisplay();
     }
 
     @Nonnull
@@ -233,6 +295,7 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
                 }
             }
 
+            this.updateDisplaySize();
             return serverMonitor;
         }
         else
@@ -244,17 +307,6 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
 
             return serverMonitor = ((TileMonitor) te).createServerMonitor();
         }
-    }
-
-    @Nullable
-    public ClientMonitor getClientMonitor()
-    {
-        if( clientMonitor != null ) return clientMonitor;
-
-        BlockEntity te = level.getBlockEntity( toWorldPos( 0, 0 ) );
-        if( !(te instanceof TileMonitor) ) return null;
-
-        return clientMonitor = ((TileMonitor) te).clientMonitor;
     }
 
     // Networking stuff
@@ -286,8 +338,6 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
             return;
         }
 
-        if( clientMonitor == null ) clientMonitor = new ClientMonitor( advanced, this );
-        clientMonitor.read( state );
     }
 
     // Sizing and placement stuff
@@ -298,6 +348,7 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
             .setValue( BlockMonitor.STATE, MonitorEdgeState.fromConnections(
                 yIndex < height - 1, yIndex > 0,
                 xIndex > 0, xIndex < width - 1 ) ), 2 );
+
     }
 
     // region Sizing and placement stuff
@@ -458,6 +509,7 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
                 monitor.needsUpdate = monitor.needsValidating = false;
                 monitor.updateBlockState();
                 monitor.updateBlock();
+                monitor.updateDisplaySize();
             }
         }
     }

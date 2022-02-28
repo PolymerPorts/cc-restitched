@@ -6,6 +6,7 @@
 package dan200.computercraft.shared.media.recipes;
 
 import dan200.computercraft.shared.media.items.ItemPrintout;
+import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
-public final class PrintoutRecipe extends CustomRecipe
+public final class PrintoutRecipe extends CustomRecipe implements PolymerRecipe
 {
     private final Ingredient paper = Ingredient.of( Items.PAPER );
     private final Ingredient leather = Ingredient.of( Items.LEATHER );

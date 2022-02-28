@@ -466,6 +466,6 @@ public final class TilePrinter extends TileGeneric implements IPeripheralTile, D
     @Override
     public AbstractContainerMenu createMenu( int id, @Nonnull Inventory inventory, @Nonnull Player player )
     {
-        return new ContainerPrinter( id, inventory, this );
+        return null;
     }
 }

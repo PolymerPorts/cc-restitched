@@ -13,9 +13,12 @@ import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.turtle.items.ITurtleItem;
 import dan200.computercraft.shared.turtle.items.TurtleItemFactory;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
+import eu.pb4.polymer.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.api.utils.PolymerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -23,10 +26,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -47,7 +47,7 @@ import java.util.function.Supplier;
 import static dan200.computercraft.shared.util.WaterloggableHelpers.WATERLOGGED;
 import static dan200.computercraft.shared.util.WaterloggableHelpers.getFluidStateForPlacement;
 
-public class BlockTurtle extends BlockComputerBase<TileTurtle> implements SimpleWaterloggedBlock
+public class BlockTurtle extends BlockComputerBase<TileTurtle> implements SimpleWaterloggedBlock, PolymerHeadBlock
 {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -179,5 +179,20 @@ public class BlockTurtle extends BlockComputerBase<TileTurtle> implements Simple
     public <U extends BlockEntity> BlockEntityTicker<U> getTicker( @Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<U> type )
     {
         return level.isClientSide ? BaseEntityBlock.createTickerHelper( type, this.type.get(), clientTicker ) : super.getTicker( level, state, type );
+    }
+
+    @Override
+    public Block getPolymerBlock(BlockState state) {
+        return Blocks.PLAYER_HEAD;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState state) {
+        return Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, state.getValue(FACING).get2DDataValue() * 4);
+    }
+
+    @Override
+    public String getPolymerSkinValue(BlockState state) {
+        return PolymerUtils.NO_TEXTURE_HEAD_VALUE;
     }
 }

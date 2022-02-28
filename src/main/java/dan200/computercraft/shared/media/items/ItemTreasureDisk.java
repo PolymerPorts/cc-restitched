@@ -11,14 +11,13 @@ import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.core.filesystem.SubMount;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.util.Colour;
+import eu.pb4.polymer.api.item.PolymerItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
@@ -26,7 +25,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 
-public class ItemTreasureDisk extends Item implements IMedia
+public class ItemTreasureDisk extends Item implements IMedia, PolymerItem
 {
     private static final String NBT_TITLE = "Title";
     private static final String NBT_COLOUR = "Colour";
@@ -128,5 +127,10 @@ public class ItemTreasureDisk extends Item implements IMedia
     {
         CompoundTag nbt = stack.getTag();
         return nbt != null && nbt.contains( NBT_COLOUR ) ? nbt.getInt( NBT_COLOUR ) : Colour.BLUE.getHex();
+    }
+
+    @Override
+    public Item getPolymerItem(ItemStack itemStack, @org.jetbrains.annotations.Nullable ServerPlayer player) {
+        return Items.MUSIC_DISC_PIGSTEP;
     }
 }

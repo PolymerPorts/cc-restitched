@@ -12,23 +12,22 @@ import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.IColouredItem;
 import dan200.computercraft.shared.util.Colour;
+import eu.pb4.polymer.api.item.PolymerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemDisk extends Item implements IMedia, IColouredItem
+public class ItemDisk extends Item implements IMedia, IColouredItem, PolymerItem
 {
     private static final String NBT_ID = "DiskId";
 
@@ -119,5 +118,15 @@ public class ItemDisk extends Item implements IMedia, IColouredItem
     {
         int colour = IColouredItem.getColourBasic( stack );
         return colour == -1 ? Colour.WHITE.getHex() : colour;
+    }
+
+    @Override
+    public Item getPolymerItem(ItemStack itemStack, @org.jetbrains.annotations.Nullable ServerPlayer player) {
+        return Items.LEATHER_CHESTPLATE;
+    }
+
+    @Override
+    public int getPolymerArmorColor(ItemStack itemStack, @org.jetbrains.annotations.Nullable ServerPlayer player) {
+        return getColour(itemStack);
     }
 }

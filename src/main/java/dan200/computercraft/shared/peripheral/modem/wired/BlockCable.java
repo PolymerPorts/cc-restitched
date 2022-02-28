@@ -11,6 +11,7 @@ import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
 import dan200.computercraft.shared.util.WorldUtil;
+import eu.pb4.polymer.api.block.PolymerBlock;
 import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,12 +21,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -39,7 +43,7 @@ import java.util.EnumMap;
 import static dan200.computercraft.shared.util.WaterloggableHelpers.WATERLOGGED;
 import static dan200.computercraft.shared.util.WaterloggableHelpers.getFluidStateForPlacement;
 
-public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, BlockPickInteractionAware
+public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, BlockPickInteractionAware, PolymerBlock
 {
     public static final EnumProperty<CableModemVariant> MODEM = EnumProperty.create( "modem", CableModemVariant.class );
     public static final BooleanProperty CABLE = BooleanProperty.create( "cable" );
@@ -242,5 +246,20 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
                 .setValue( NORTH, false ).setValue( SOUTH, false ).setValue( EAST, false )
                 .setValue( WEST, false ).setValue( UP, false ).setValue( DOWN, false );
         }
+    }
+
+    @Override
+    public Block getPolymerBlock(BlockState state) {
+        return Blocks.ANDESITE_WALL;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState state) {
+        return Blocks.ANDESITE_WALL.defaultBlockState()
+            .setValue(WallBlock.UP, state.getValue(UP))
+            .setValue(WallBlock.EAST_WALL, state.getValue(EAST) ? WallSide.LOW : WallSide.NONE)
+            .setValue(WallBlock.WEST_WALL, state.getValue(WEST) ? WallSide.LOW : WallSide.NONE)
+            .setValue(WallBlock.NORTH_WALL, state.getValue(NORTH) ? WallSide.LOW : WallSide.NONE)
+            .setValue(WallBlock.SOUTH_WALL, state.getValue(SOUTH) ? WallSide.LOW : WallSide.NONE);
     }
 }

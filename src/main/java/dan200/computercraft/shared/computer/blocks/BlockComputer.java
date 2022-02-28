@@ -5,13 +5,18 @@
  */
 package dan200.computercraft.shared.computer.blocks;
 
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ComputerState;
 import dan200.computercraft.shared.computer.items.ComputerItemFactory;
+import eu.pb4.polymer.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.api.utils.PolymerUtils;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -23,10 +28,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public class BlockComputer<T extends TileComputer> extends BlockComputerBase<T>
+public class BlockComputer<T extends TileComputer> extends BlockComputerBase<T> implements PolymerHeadBlock
 {
     public static final EnumProperty<ComputerState> STATE = EnumProperty.create( "state", ComputerState.class );
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    private final String offTexture;
+    private final String onTexture;
 
     public BlockComputer( Properties settings, ComputerFamily family, Supplier<BlockEntityType<T>> type )
     {
@@ -35,6 +42,18 @@ public class BlockComputer<T extends TileComputer> extends BlockComputerBase<T>
             .setValue( FACING, Direction.NORTH )
             .setValue( STATE, ComputerState.OFF )
         );
+
+        this.offTexture = switch (family) {
+            case ADVANCED -> HeadTextures.ADVANCED_COMPUTER;
+            case NORMAL -> HeadTextures.COMPUTER;
+            default -> PolymerUtils.NO_TEXTURE_HEAD_VALUE;
+        };
+
+        this.onTexture = switch (family) {
+            case ADVANCED -> HeadTextures.ADVANCED_COMPUTER_ON;
+            case NORMAL -> HeadTextures.COMPUTER_ON;
+            default -> PolymerUtils.NO_TEXTURE_HEAD_VALUE;
+        };
     }
 
     @Override
@@ -55,5 +74,20 @@ public class BlockComputer<T extends TileComputer> extends BlockComputerBase<T>
     protected ItemStack getItem( TileComputerBase tile )
     {
         return tile instanceof TileComputer ? ComputerItemFactory.create( (TileComputer) tile ) : ItemStack.EMPTY;
+    }
+
+    @Override
+    public Block getPolymerBlock(BlockState state) {
+        return Blocks.PLAYER_HEAD;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState state) {
+        return Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, state.getValue(FACING).getOpposite().get2DDataValue() * 4);
+    }
+
+    @Override
+    public String getPolymerSkinValue(BlockState state) {
+        return state.getValue(STATE) == ComputerState.OFF ? this.offTexture : this.onTexture;
     }
 }

@@ -8,6 +8,7 @@ package dan200.computercraft.shared.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +23,7 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
-public final class ImpostorShapelessRecipe extends ShapelessRecipe
+public final class ImpostorShapelessRecipe extends ShapelessRecipe implements PolymerRecipe
 {
     private final String group;
 

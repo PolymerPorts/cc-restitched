@@ -9,6 +9,7 @@ import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.items.IComputerItem;
 import dan200.computercraft.shared.computer.recipe.ComputerFamilyRecipe;
 import dan200.computercraft.shared.turtle.items.TurtleItemFactory;
+import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -17,7 +18,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import javax.annotation.Nonnull;
 
-public final class TurtleRecipe extends ComputerFamilyRecipe
+public final class TurtleRecipe extends ComputerFamilyRecipe implements PolymerRecipe
 {
     private TurtleRecipe( ResourceLocation identifier, String group, int width, int height, NonNullList<Ingredient> ingredients, ItemStack result, ComputerFamily family )
     {

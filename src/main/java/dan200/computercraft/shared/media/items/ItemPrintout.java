@@ -7,23 +7,26 @@ package dan200.computercraft.shared.media.items;
 
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.ContainerHeldItem;
-import dan200.computercraft.shared.network.container.HeldItemContainerData;
+import eu.pb4.polymer.api.item.PolymerItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class ItemPrintout extends Item
+public class ItemPrintout extends Item implements PolymerItem
 {
     private static final String NBT_TITLE = "Title";
     private static final String NBT_PAGES = "Pages";
@@ -33,6 +36,11 @@ public class ItemPrintout extends Item
     public static final int LINES_PER_PAGE = 21;
     public static final int LINE_MAX_LENGTH = 25;
     public static final int MAX_PAGES = 16;
+
+    @Override
+    public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayer player) {
+        return Items.FILLED_MAP;
+    }
 
     public enum Type
     {
@@ -60,11 +68,7 @@ public class ItemPrintout extends Item
     @Override
     public InteractionResultHolder<ItemStack> use( Level world, @Nonnull Player player, @Nonnull InteractionHand hand )
     {
-        if( !world.isClientSide )
-        {
-            new HeldItemContainerData( hand )
-                .open( player, new ContainerHeldItem.Factory( Registry.ModContainers.PRINTOUT, player.getItemInHand( hand ), hand ) );
-        }
+
         return new InteractionResultHolder<>( InteractionResult.SUCCESS, player.getItemInHand( hand ) );
     }
 

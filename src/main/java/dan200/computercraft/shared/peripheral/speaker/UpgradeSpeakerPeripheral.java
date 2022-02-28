@@ -6,8 +6,6 @@
 package dan200.computercraft.shared.peripheral.speaker;
 
 import dan200.computercraft.api.peripheral.IComputerAccess;
-import dan200.computercraft.shared.network.NetworkHandler;
-import dan200.computercraft.shared.network.client.SpeakerStopClientMessage;
 import me.shedaniel.cloth.api.utils.v1.GameInstanceUtils;
 import net.minecraft.server.MinecraftServer;
 
@@ -29,6 +27,6 @@ public abstract class UpgradeSpeakerPeripheral extends SpeakerPeripheral
         MinecraftServer server = GameInstanceUtils.getServer();
         if( server == null || server.isStopped() ) return;
 
-        NetworkHandler.sendToAllPlayers( new SpeakerStopClientMessage( getSource() ) );
+        //NetworkHandler.sendToAllPlayers( new SpeakerStopClientMessage( getSource() ) );
     }
 }

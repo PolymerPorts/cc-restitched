@@ -5,13 +5,18 @@
  */
 package dan200.computercraft.shared.peripheral.speaker;
 
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
+import eu.pb4.polymer.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.api.utils.PolymerUtils;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -23,7 +28,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockSpeaker extends BlockGeneric
+public class BlockSpeaker extends BlockGeneric implements PolymerHeadBlock
 {
     private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -54,5 +59,20 @@ public class BlockSpeaker extends BlockGeneric
     public <U extends BlockEntity> BlockEntityTicker<U> getTicker( @Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<U> type )
     {
         return level.isClientSide ? null : BaseEntityBlock.createTickerHelper( type, Registry.ModBlockEntities.SPEAKER, serverTicker );
+    }
+
+    @Override
+    public Block getPolymerBlock(BlockState state) {
+        return Blocks.PLAYER_HEAD;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState state) {
+        return Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, state.getValue(FACING).getOpposite().get2DDataValue() * 4);
+    }
+
+    @Override
+    public String getPolymerSkinValue(BlockState state) {
+        return HeadTextures.SPEAKER;
     }
 }

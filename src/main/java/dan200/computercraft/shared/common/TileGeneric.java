@@ -5,6 +5,7 @@
  */
 package dan200.computercraft.shared.common;
 
+import eu.pb4.polymer.api.utils.PolymerObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -22,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 
-public abstract class TileGeneric extends BlockEntity
+public abstract class TileGeneric extends BlockEntity implements PolymerObject
 {
     public TileGeneric( BlockEntityType<? extends TileGeneric> type, BlockPos pos, BlockState state )
     {

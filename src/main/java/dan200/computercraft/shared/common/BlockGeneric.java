@@ -5,6 +5,8 @@
  */
 package dan200.computercraft.shared.common;
 
+import eu.pb4.polymer.api.block.PolymerBlock;
+import eu.pb4.polymer.api.block.PolymerHeadBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -24,7 +26,7 @@ import javax.annotation.Nullable;
 import java.util.Random;
 import java.util.function.Supplier;
 
-public abstract class BlockGeneric extends BaseEntityBlock
+public abstract class BlockGeneric extends BaseEntityBlock implements PolymerBlock
 {
     private final Supplier<? extends BlockEntityType<? extends TileGeneric>> type;
 

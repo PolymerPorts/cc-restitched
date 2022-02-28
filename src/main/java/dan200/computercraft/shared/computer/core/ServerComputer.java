@@ -17,11 +17,6 @@ import dan200.computercraft.core.computer.Computer;
 import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.core.computer.IComputerEnvironment;
 import dan200.computercraft.shared.common.ServerTerminal;
-import dan200.computercraft.shared.network.NetworkHandler;
-import dan200.computercraft.shared.network.NetworkMessage;
-import dan200.computercraft.shared.network.client.ComputerDataClientMessage;
-import dan200.computercraft.shared.network.client.ComputerDeletedClientMessage;
-import dan200.computercraft.shared.network.client.ComputerTerminalClientMessage;
 import me.shedaniel.cloth.api.utils.v1.GameInstanceUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -142,22 +137,12 @@ public class ServerComputer extends ServerTerminal implements IComputer, IComput
         changed = true;
     }
 
-    private NetworkMessage createComputerPacket()
-    {
-        return new ComputerDataClientMessage( this );
-    }
-
-    protected NetworkMessage createTerminalPacket()
-    {
-        return new ComputerTerminalClientMessage( getInstanceID(), write() );
-    }
-
     public void broadcastState( boolean force )
     {
         if( hasOutputChanged() || force )
         {
             // Send computer state to all clients
-            NetworkHandler.sendToAllPlayers( createComputerPacket() );
+            //NetworkHandler.sendToAllPlayers( createComputerPacket() );
         }
 
         if( hasTerminalChanged() || force )
@@ -165,13 +150,13 @@ public class ServerComputer extends ServerTerminal implements IComputer, IComput
             // Send terminal state to clients who are currently interacting with the computer.
             MinecraftServer server = GameInstanceUtils.getServer();
 
-            NetworkMessage packet = null;
+            //NetworkMessage packet = null;
             for( Player player : server.getPlayerList().getPlayers() )
             {
                 if( isInteracting( player ) )
                 {
-                    if( packet == null ) packet = createTerminalPacket();
-                    NetworkHandler.sendToPlayer( player, packet );
+                    //if( packet == null ) packet = createTerminalPacket();
+                    //NetworkHandler.sendToPlayer( player, packet );
                 }
             }
         }
@@ -180,19 +165,19 @@ public class ServerComputer extends ServerTerminal implements IComputer, IComput
     public void sendComputerState( Player player )
     {
         // Send state to client
-        NetworkHandler.sendToPlayer( player, createComputerPacket() );
+        //NetworkHandler.sendToPlayer( player, createComputerPacket() );
     }
 
     public void sendTerminalState( Player player )
     {
         // Send terminal state to client
-        NetworkHandler.sendToPlayer( player, createTerminalPacket() );
+        //NetworkHandler.sendToPlayer( player, createTerminalPacket() );
     }
 
     public void broadcastDelete()
     {
         // Send deletion to client
-        NetworkHandler.sendToAllPlayers( new ComputerDeletedClientMessage( getInstanceID() ) );
+        //NetworkHandler.sendToAllPlayers( new ComputerDeletedClientMessage( getInstanceID() ) );
     }
 
     public void setID( int id )

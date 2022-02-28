@@ -5,24 +5,27 @@
  */
 package dan200.computercraft.shared.util;
 
+import eu.pb4.mapcanvas.api.core.CanvasColor;
+import eu.pb4.mapcanvas.api.utils.CanvasUtils;
+
 public enum Colour
 {
-    BLACK( 0x111111 ),
-    RED( 0xcc4c4c ),
-    GREEN( 0x57A64E ),
-    BROWN( 0x7f664c ),
-    BLUE( 0x3366cc ),
-    PURPLE( 0xb266e5 ),
-    CYAN( 0x4c99b2 ),
-    LIGHT_GREY( 0x999999 ),
-    GREY( 0x4c4c4c ),
-    PINK( 0xf2b2cc ),
-    LIME( 0x7fcc19 ),
-    YELLOW( 0xdede6c ),
-    LIGHT_BLUE( 0x99b2f2 ),
-    MAGENTA( 0xe57fd8 ),
-    ORANGE( 0xf2b233 ),
-    WHITE( 0xf0f0f0 );
+    BLACK( 0x111111, CanvasColor.BLACK_LOW ),
+    RED( 0xcc4c4c, CanvasColor.DULL_RED_HIGH ),
+    GREEN( 0x57A64E, CanvasColor.PALE_GREEN_NORMAL ),
+    BROWN( 0x7f664c, CanvasColor.DIRT_BROWN_NORMAL ),
+    BLUE( 0x3366cc, CanvasColor.LAPIS_BLUE_NORMAL ),
+    PURPLE( 0xb266e5, CanvasColor.PURPLE_HIGH ),
+    CYAN( 0x4c99b2, CanvasColor.DIAMOND_BLUE_LOW ),
+    LIGHT_GREY( 0x999999, CanvasColor.LIGHT_GRAY_HIGH ),
+    GREY( 0x4c4c4c, CanvasColor.STONE_GRAY_HIGH ),
+    PINK( 0xf2b2cc, CanvasColor.PINK_HIGH ),
+    LIME( 0x7fcc19, CanvasColor.LIME_HIGH ),
+    YELLOW( 0xdede6c, CanvasColor.YELLOW_HIGH ),
+    LIGHT_BLUE( 0x99b2f2, CanvasColor.PALE_PURPLE_HIGH ),
+    MAGENTA( 0xe57fd8, CanvasColor.MAGENTA_HIGH ),
+    ORANGE( 0xf2b233, CanvasColor.ORANGE_HIGH ),
+    WHITE( 0xf0f0f0, CanvasColor.OFF_WHITE_HIGH );
 
     public static final Colour[] VALUES = values();
 
@@ -43,10 +46,12 @@ public enum Colour
 
     private final int hex;
     private final float[] rgb;
+    public final CanvasColor canvasColor;
 
-    Colour( int hex )
+    Colour( int hex, CanvasColor color )
     {
         this.hex = hex;
+        this.canvasColor = color;
         rgb = new float[] {
             ((hex >> 16) & 0xFF) / 255.0f,
             ((hex >> 8) & 0xFF) / 255.0f,

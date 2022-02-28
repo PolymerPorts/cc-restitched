@@ -13,7 +13,6 @@ import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.shared.common.IColouredItem;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
-import dan200.computercraft.shared.network.NetworkHandler;
 import dan200.computercraft.shared.pocket.items.ItemPocketComputer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -188,7 +187,7 @@ public class PocketServerComputer extends ServerComputer implements IPocketAcces
             // Broadcast the state to the current entity if they're not already interacting with it.
             if( player.connection != null && !isInteracting( player ) )
             {
-                NetworkHandler.sendToPlayer( player, createTerminalPacket() );
+                //NetworkHandler.sendToPlayer( player, createTerminalPacket() );
             }
         }
     }

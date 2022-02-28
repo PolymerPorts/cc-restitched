@@ -10,6 +10,7 @@ import dan200.computercraft.shared.PocketUpgrades;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.pocket.items.ItemPocketComputer;
 import dan200.computercraft.shared.pocket.items.PocketComputerItemFactory;
+import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +21,7 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
-public final class PocketComputerUpgradeRecipe extends CustomRecipe
+public final class PocketComputerUpgradeRecipe extends CustomRecipe implements PolymerRecipe
 {
     private PocketComputerUpgradeRecipe( ResourceLocation identifier )
     {

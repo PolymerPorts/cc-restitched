@@ -6,6 +6,7 @@
 package dan200.computercraft.shared.util;
 
 import com.google.gson.JsonObject;
+import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -19,7 +20,7 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
-public final class ImpostorRecipe extends ShapedRecipe
+public final class ImpostorRecipe extends ShapedRecipe implements PolymerRecipe
 {
     private final String group;
 

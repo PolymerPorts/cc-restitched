@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,8 +35,9 @@ public class BlockMonitor extends BlockGeneric
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public static final EnumProperty<MonitorEdgeState> STATE = EnumProperty.create( "state", MonitorEdgeState.class );
+    private final Block polymerBlock;
 
-    public BlockMonitor( Properties settings, Supplier<BlockEntityType<? extends TileMonitor>> type )
+    public BlockMonitor( Properties settings, Supplier<BlockEntityType<? extends TileMonitor>> type, Block polymerBlock )
     {
         super( settings, type );
         // TODO: Test underwater - do we need isSolid at all?
@@ -43,6 +45,9 @@ public class BlockMonitor extends BlockGeneric
             .setValue( ORIENTATION, Direction.NORTH )
             .setValue( FACING, Direction.NORTH )
             .setValue( STATE, MonitorEdgeState.NONE ) );
+
+
+        this.polymerBlock = polymerBlock;
     }
 
     @Override
@@ -94,5 +99,10 @@ public class BlockMonitor extends BlockGeneric
 
             monitor.expand();
         }
+    }
+
+    @Override
+    public Block getPolymerBlock(BlockState state) {
+        return this.polymerBlock;
     }
 }

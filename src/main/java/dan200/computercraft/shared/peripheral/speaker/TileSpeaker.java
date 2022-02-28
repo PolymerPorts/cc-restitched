@@ -8,8 +8,6 @@ package dan200.computercraft.shared.peripheral.speaker;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.IPeripheralTile;
 import dan200.computercraft.shared.common.TileGeneric;
-import dan200.computercraft.shared.network.NetworkHandler;
-import dan200.computercraft.shared.network.client.SpeakerStopClientMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -43,7 +41,7 @@ public class TileSpeaker extends TileGeneric implements IPeripheralTile
         super.setRemoved();
         if( level != null && !level.isClientSide )
         {
-            NetworkHandler.sendToAllPlayers( new SpeakerStopClientMessage( peripheral.getSource() ) );
+            //NetworkHandler.sendToAllPlayers( new SpeakerStopClientMessage( peripheral.getSource() ) );
         }
     }
 

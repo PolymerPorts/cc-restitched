@@ -6,6 +6,7 @@
 package dan200.computercraft.shared.peripheral.modem.wired;
 
 import dan200.computercraft.shared.Registry;
+import eu.pb4.polymer.api.item.PolymerBlockItem;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,13 +27,13 @@ import javax.annotation.Nonnull;
 
 import static dan200.computercraft.shared.peripheral.modem.wired.BlockCable.*;
 
-public abstract class ItemBlockCable extends BlockItem
+public abstract class ItemBlockCable extends PolymerBlockItem
 {
     private String translationKey;
 
     public ItemBlockCable( BlockCable block, Properties settings )
     {
-        super( block, settings );
+        super( block, settings, block.getPolymerBlock(block.defaultBlockState()).asItem() );
     }
 
     boolean placeAt( Level world, BlockPos pos, BlockState state, Player player )

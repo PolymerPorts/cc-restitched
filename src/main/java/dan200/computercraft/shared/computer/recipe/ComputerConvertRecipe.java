@@ -6,6 +6,7 @@
 package dan200.computercraft.shared.computer.recipe;
 
 import dan200.computercraft.shared.computer.items.IComputerItem;
+import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -19,7 +20,7 @@ import javax.annotation.Nonnull;
 /**
  * Represents a recipe which converts a computer from one form into another.
  */
-public abstract class ComputerConvertRecipe extends ShapedRecipe
+public abstract class ComputerConvertRecipe extends ShapedRecipe implements PolymerRecipe
 {
     private final String group;
 

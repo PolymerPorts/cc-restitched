@@ -11,7 +11,6 @@ import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ComputerState;
 import dan200.computercraft.shared.computer.core.ServerComputer;
-import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Inventory;
@@ -75,12 +74,4 @@ public class TileComputer extends TileComputerBase
         if( localSide == ComputerSide.LEFT ) return ComputerSide.RIGHT;
         return localSide;
     }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu( int id, @Nonnull Inventory inventory, @Nonnull Player player )
-    {
-        return new ComputerMenuWithoutInventory( Registry.ModContainers.COMPUTER, id, inventory, this::isUsableByPlayer, createServerComputer(), getFamily() );
-    }
-
 }

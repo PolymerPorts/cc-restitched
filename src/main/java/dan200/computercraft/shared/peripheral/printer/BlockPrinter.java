@@ -7,6 +7,8 @@ package dan200.computercraft.shared.peripheral.printer;
 
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
+import eu.pb4.polymer.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.api.utils.PolymerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
@@ -17,6 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -27,7 +31,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockPrinter extends BlockGeneric
+public class BlockPrinter extends BlockGeneric implements PolymerHeadBlock
 {
     private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     static final BooleanProperty TOP = BooleanProperty.create( "top" );
@@ -80,5 +84,20 @@ public class BlockPrinter extends BlockGeneric
         {
             printer.customName = stack.getHoverName();
         }
+    }
+
+    @Override
+    public Block getPolymerBlock(BlockState state) {
+        return Blocks.PLAYER_HEAD;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState state) {
+        return Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, state.getValue(FACING).get2DDataValue() * 4);
+    }
+
+    @Override
+    public String getPolymerSkinValue(BlockState state) {
+        return PolymerUtils.NO_TEXTURE_HEAD_VALUE;
     }
 }

@@ -107,4 +107,8 @@ public class InputState implements InputHandler
         keysDown.clear();
         lastMouseDown = -1;
     }
+
+    public boolean isKeyDown(int key) {
+        return this.keysDown.contains(key);
+    }
 }

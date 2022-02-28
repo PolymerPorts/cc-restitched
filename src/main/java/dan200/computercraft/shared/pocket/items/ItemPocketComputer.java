@@ -12,22 +12,24 @@ import dan200.computercraft.api.filesystem.IMount;
 import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.api.pocket.IPocketUpgrade;
 import dan200.computercraft.core.computer.ComputerSide;
+import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
+import dan200.computercraft.fabric.poly.ComputerGui;
 import dan200.computercraft.shared.PocketUpgrades;
 import dan200.computercraft.shared.common.IColouredItem;
-import dan200.computercraft.shared.computer.core.ClientComputer;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ComputerState;
+import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.computer.items.IComputerItem;
-import dan200.computercraft.shared.network.container.ComputerContainerData;
 import dan200.computercraft.shared.pocket.apis.PocketAPI;
 import dan200.computercraft.shared.pocket.core.PocketServerComputer;
-import dan200.computercraft.shared.pocket.inventory.PocketComputerMenuProvider;
+import eu.pb4.polymer.api.item.PolymerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -35,17 +37,14 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemPocketComputer extends Item implements IComputerItem, IMedia, IColouredItem
+public class ItemPocketComputer extends Item implements IComputerItem, IMedia, IColouredItem, PolymerItem
 {
     private static final String NBT_UPGRADE = "Upgrade";
     private static final String NBT_UPGRADE_INFO = "UpgradeInfo";
@@ -55,11 +54,18 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
     private static final String NBT_SESSION = "SessionId";
 
     private final ComputerFamily family;
+    private final Item polymerItem;
 
     public ItemPocketComputer( Properties settings, ComputerFamily family )
     {
         super( settings );
         this.family = family;
+
+        this.polymerItem = switch (family) {
+            case NORMAL -> Items.IRON_INGOT;
+            case ADVANCED -> Items.GOLD_INGOT;
+            case COMMAND -> Items.COPPER_INGOT;
+        };
     }
 
     public ItemStack create( int id, String label, int colour, IPocketUpgrade upgrade )
@@ -123,10 +129,6 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
             boolean changed = tick( stack, world, entity, computer );
             if( changed && inventory != null ) inventory.setChanged();
         }
-        else
-        {
-            createClientComputer( stack );
-        }
     }
 
     @Override
@@ -159,8 +161,20 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
 
             if( !stop )
             {
+                ComputerGui.open((ServerPlayer) player, new ComputerDisplayAccess() {
+                    @Override
+                    public ServerComputer getComputer() {
+                        return computer;
+                    }
+
+                    @Override
+                    public boolean canStayOpen(ServerPlayer player) {
+                        return player.getItemInHand(hand) == stack;
+                    }
+                });
+
                 boolean isTypingOnly = hand == InteractionHand.OFF_HAND;
-                new ComputerContainerData( computer ).open( player, new PocketComputerMenuProvider( computer, stack, this, hand, isTypingOnly ) );
+                //new ComputerContainerData( computer ).open( player, new PocketComputerMenuProvider( computer, stack, this, hand, isTypingOnly ) );
             }
         }
         return new InteractionResultHolder<>( InteractionResult.SUCCESS, stack );
@@ -246,28 +260,6 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
         return instanceID >= 0 ? (PocketServerComputer) ComputerCraft.serverComputerRegistry.get( instanceID ) : null;
     }
 
-    @Nullable
-    public static ClientComputer createClientComputer( @Nonnull ItemStack stack )
-    {
-        int instanceID = getInstanceID( stack );
-        if( instanceID >= 0 )
-        {
-            if( !ComputerCraft.clientComputerRegistry.contains( instanceID ) )
-            {
-                ComputerCraft.clientComputerRegistry.add( instanceID, new ClientComputer( instanceID ) );
-            }
-            return ComputerCraft.clientComputerRegistry.get( instanceID );
-        }
-        return null;
-    }
-
-    @Nullable
-    private static ClientComputer getClientComputer( @Nonnull ItemStack stack )
-    {
-        int instanceID = getInstanceID( stack );
-        return instanceID >= 0 ? ComputerCraft.clientComputerRegistry.get( instanceID ) : null;
-    }
-
     // IComputerItem implementation
 
     private static void setComputerID( @Nonnull ItemStack stack, int computerID )
@@ -345,26 +337,6 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
         stack.getOrCreateTag().putInt( NBT_SESSION, sessionID );
     }
 
-    public static ComputerState getState( @Nonnull ItemStack stack )
-    {
-        ClientComputer computer = getClientComputer( stack );
-        return computer == null ? ComputerState.OFF : computer.getState();
-    }
-
-    public static int getLightState( @Nonnull ItemStack stack )
-    {
-        ClientComputer computer = getClientComputer( stack );
-        if( computer != null && computer.isOn() )
-        {
-            CompoundTag computerNBT = computer.getUserData();
-            if( computerNBT != null && computerNBT.contains( NBT_LIGHT ) )
-            {
-                return computerNBT.getInt( NBT_LIGHT );
-            }
-        }
-        return -1;
-    }
-
     public static IPocketUpgrade getUpgrade( @Nonnull ItemStack stack )
     {
         CompoundTag compound = stack.getTag();
@@ -391,5 +363,10 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
     public static CompoundTag getUpgradeInfo( @Nonnull ItemStack stack )
     {
         return stack.getOrCreateTagElement( NBT_UPGRADE_INFO );
+    }
+
+    @Override
+    public Item getPolymerItem(ItemStack itemStack, @org.jetbrains.annotations.Nullable ServerPlayer player) {
+        return this.polymerItem;
     }
 }

@@ -5,7 +5,6 @@
  */
 package dan200.computercraft.shared.turtle.upgrades;
 
-import dan200.computercraft.api.client.TransformedModel;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.turtle.AbstractTurtleUpgrade;
 import dan200.computercraft.api.turtle.ITurtleAccess;
@@ -37,13 +36,5 @@ public class TurtleCraftingTable extends AbstractTurtleUpgrade
     public IPeripheral createPeripheral( @Nonnull ITurtleAccess turtle, @Nonnull TurtleSide side )
     {
         return new CraftingTablePeripheral( turtle );
-    }
-
-    @Nonnull
-    @Override
-    @Environment( EnvType.CLIENT )
-    public TransformedModel getModel( ITurtleAccess turtle, @Nonnull TurtleSide side )
-    {
-        return TransformedModel.of( side == TurtleSide.LEFT ? Models.leftModel : Models.rightModel );
     }
 }

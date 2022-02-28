@@ -8,6 +8,7 @@ package dan200.computercraft.shared.computer.recipe;
 import com.google.gson.JsonObject;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.util.RecipeUtil;
+import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -18,7 +19,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import javax.annotation.Nonnull;
 
-public abstract class ComputerFamilyRecipe extends ComputerConvertRecipe
+public abstract class ComputerFamilyRecipe extends ComputerConvertRecipe implements PolymerRecipe
 {
     private final ComputerFamily family;
 

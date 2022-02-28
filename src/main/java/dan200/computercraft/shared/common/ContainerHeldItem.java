@@ -6,7 +6,6 @@
 package dan200.computercraft.shared.common;
 
 import dan200.computercraft.shared.Registry;
-import dan200.computercraft.shared.network.container.HeldItemContainerData;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -32,11 +31,6 @@ public class ContainerHeldItem extends AbstractContainerMenu
 
         this.hand = hand;
         stack = player.getItemInHand( hand ).copy();
-    }
-
-    public static ContainerHeldItem createPrintout( int id, Inventory inventory, HeldItemContainerData data )
-    {
-        return new ContainerHeldItem( Registry.ModContainers.PRINTOUT, id, inventory.player, data.getHand() );
     }
 
     @Nonnull

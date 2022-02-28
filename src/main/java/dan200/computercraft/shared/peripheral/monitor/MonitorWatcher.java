@@ -7,8 +7,6 @@ package dan200.computercraft.shared.peripheral.monitor;
 
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.fabric.events.CustomServerEvents;
-import dan200.computercraft.shared.network.NetworkHandler;
-import dan200.computercraft.shared.network.client.MonitorClientMessage;
 import dan200.computercraft.shared.network.client.TerminalState;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
@@ -82,7 +80,7 @@ public final class MonitorWatcher
             ServerPlayer player = playerUpdate.player;
             if( !player.isAlive() || player.getLevel() != tile.getLevel() ) continue;
 
-            NetworkHandler.sendToPlayer( playerUpdate.player, new MonitorClientMessage( tile.getBlockPos(), getState( tile, monitor ) ) );
+            //NetworkHandler.sendToPlayer( playerUpdate.player, new MonitorClientMessage( tile.getBlockPos(), getState( tile, monitor ) ) );
         }
 
         long limit = ComputerCraft.monitorBandwidth;
@@ -106,7 +104,7 @@ public final class MonitorWatcher
             }
 
             TerminalState state = getState( tile, monitor );
-            NetworkHandler.sendToAllTracking( new MonitorClientMessage( pos, state ), chunk );
+            //NetworkHandler.sendToAllTracking( new MonitorClientMessage( pos, state ), chunk );
 
             limit -= state.size();
         }

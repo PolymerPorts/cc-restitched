@@ -22,8 +22,6 @@ import dan200.computercraft.shared.data.BlockNamedEntityLootCondition;
 import dan200.computercraft.shared.data.HasComputerIdLootCondition;
 import dan200.computercraft.shared.data.PlayerCreativeLootCondition;
 import dan200.computercraft.shared.media.items.RecordMedia;
-import dan200.computercraft.shared.network.NetworkHandler;
-import dan200.computercraft.shared.network.client.TerminalDimensionsClientMessage;
 import dan200.computercraft.shared.peripheral.commandblock.CommandBlockPeripheral;
 import dan200.computercraft.shared.peripheral.generic.methods.InventoryMethods;
 import dan200.computercraft.shared.peripheral.modem.wired.BlockCable;
@@ -55,7 +53,6 @@ public final class ComputerCraftProxyCommon
 
     public static void init()
     {
-        NetworkHandler.setup();
         MonitorWatcher.init();
 
         registerProviders();
@@ -141,10 +138,6 @@ public final class ComputerCraftProxyCommon
         // Config
         ServerLifecycleEvents.SERVER_STARTING.register( Config::serverStarting );
         ServerLifecycleEvents.SERVER_STOPPING.register( Config::serverStopping );
-        ServerPlayConnectionEvents.JOIN.register( ( listener, sender, server ) ->
-        {
-            NetworkHandler.sendToPlayer( listener.player, new TerminalDimensionsClientMessage() );
-        } );
 
         TurtleEvent.EVENT_BUS.register( FurnaceRefuelHandler.INSTANCE );
         TurtleEvent.EVENT_BUS.register( new TurtlePermissions() );

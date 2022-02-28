@@ -9,7 +9,6 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.ComputerCraftTags;
-import dan200.computercraft.api.client.TransformedModel;
 import dan200.computercraft.api.turtle.*;
 import dan200.computercraft.fabric.mixininterface.IMatrix4f;
 import dan200.computercraft.shared.TurtlePermissions;
@@ -88,14 +87,6 @@ public class TurtleTool extends AbstractTurtleUpgrade
         }
 
         return true;
-    }
-
-    @Nonnull
-    @Override
-    @Environment( EnvType.CLIENT )
-    public TransformedModel getModel( ITurtleAccess turtle, @Nonnull TurtleSide side )
-    {
-        return TransformedModel.of( getCraftingItem(), side == TurtleSide.LEFT ? Transforms.leftTransform : Transforms.rightTransform );
     }
 
     @Nonnull

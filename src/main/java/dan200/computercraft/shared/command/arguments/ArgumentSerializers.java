@@ -17,17 +17,17 @@ public final class ArgumentSerializers
     @SuppressWarnings( "unchecked" )
     private static <T extends ArgumentType<?>> void registerUnsafe( ResourceLocation id, Class<T> type, ArgumentSerializer<?> serializer )
     {
-        ArgumentTypes.register( id.toString(), type, (ArgumentSerializer<T>) serializer );
+
     }
 
     private static <T extends ArgumentType<?>> void register( ResourceLocation id, Class<T> type, ArgumentSerializer<T> serializer )
     {
-        ArgumentTypes.register( id.toString(), type, serializer );
+
     }
 
     private static <T extends ArgumentType<?>> void register( ResourceLocation id, T instance )
     {
-        registerUnsafe( id, instance.getClass(), new EmptyArgumentSerializer<>( () -> instance ) );
+
     }
 
     public static void register()

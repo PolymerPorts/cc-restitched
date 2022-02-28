@@ -19,8 +19,8 @@ import dan200.computercraft.shared.computer.core.ComputerState;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.turtle.apis.TurtleAPI;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
-import dan200.computercraft.shared.turtle.inventory.ContainerTurtle;
 import dan200.computercraft.shared.util.*;
+import eu.pb4.polymer.api.utils.PolymerObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -46,7 +46,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 
-public class TileTurtle extends TileComputerBase implements ITurtleTile, DefaultInventory
+public class TileTurtle extends TileComputerBase implements ITurtleTile, DefaultInventory, PolymerObject
 {
     public static final int INVENTORY_SIZE = 16;
     public static final int INVENTORY_WIDTH = 4;
@@ -530,12 +530,5 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
         // Mark the other turtle as having moved, and so its peripheral is dead.
         copy.moveState = MoveState.MOVED;
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu( int id, @Nonnull Inventory inventory, @Nonnull Player player )
-    {
-        return new ContainerTurtle( id, inventory, brain );
     }
 }
