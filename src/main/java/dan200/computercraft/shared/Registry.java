@@ -54,12 +54,12 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
 
 import java.util.function.BiFunction;
 
@@ -138,17 +138,17 @@ public final class Registry
 
         private static BlockBehaviour.Properties properties()
         {
-            return BlockBehaviour.Properties.of( Material.GLASS ).strength( 2F ).sound( SoundType.STONE ).noOcclusion();
+            return BlockBehaviour.Properties.of( Material.STONE ).strength( 2F ).noOcclusion();
         }
 
         private static BlockBehaviour.Properties turtleProperties()
         {
-            return FabricBlockSettings.copyOf( Blocks.STONE ).strength( 2.5f );
+            return BlockBehaviour.Properties.of( Material.STONE ).strength( 2.5f );
         }
 
         private static BlockBehaviour.Properties modemProperties()
         {
-            return FabricBlockSettings.copyOf( Blocks.STONE ).breakByHand( true ).strength( 1.5f );
+            return BlockBehaviour.Properties.of( Material.STONE, MaterialColor.STONE ).strength( 1.5f );
         }
     }
 

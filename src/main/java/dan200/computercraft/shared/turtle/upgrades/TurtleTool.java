@@ -26,7 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -61,9 +61,9 @@ public class TurtleTool extends AbstractTurtleUpgrade
     final ItemStack item;
     final float damageMulitiplier;
     @Nullable
-    final Tag<Block> breakable;
+    final TagKey<Block> breakable;
 
-    public TurtleTool( ResourceLocation id, Item item, float damageMulitiplier, @Nullable Tag<Block> breakable )
+    public TurtleTool( ResourceLocation id, Item item, float damageMulitiplier, @Nullable TagKey<Block> breakable )
     {
         super( id, TurtleUpgradeType.TOOL, new ItemStack( item ) );
         this.item = new ItemStack( item );
@@ -113,7 +113,7 @@ public class TurtleTool extends AbstractTurtleUpgrade
             return UNBREAKABLE;
         }
 
-        return breakable == null || breakable.contains( state.getBlock() ) || isTriviallyBreakable( world, pos, state )
+        return breakable == null || state.is( breakable ) || isTriviallyBreakable( world, pos, state )
             ? TurtleCommandResult.success() : INEFFECTIVE;
     }
 
