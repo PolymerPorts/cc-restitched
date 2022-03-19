@@ -30,24 +30,4 @@ public record RepeatingCanvas(DrawableCanvas source, int width, int height) impl
     public int getWidth() {
         return this.width;
     }
-
-    @Override
-    public Collection<CanvasIcon> getIcons() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public CanvasIcon createIcon(MapDecoration.Type type, boolean b, int i, int i1, byte b1, @Nullable Component component) {
-        return null;
-    }
-
-    @Override
-    public CanvasIcon createIcon() {
-        return null;
-    }
-
-    @Override
-    public void removeIcon(CanvasIcon canvasIcon) {
-
-    }
 }

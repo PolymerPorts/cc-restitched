@@ -11,10 +11,10 @@ import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 public class KeyboardView extends ScreenElement {
     private static final Key[][] KEYS = new Key[][] {
         new Key[] { k("ESC", Keys.ESCAPE), e(15), k("F1", Keys.F1), k("F2", Keys.F2), k("F3", Keys.F3), k("F4", Keys.F4), e(10), k("F5", Keys.F5), k("F6", Keys.F6), k("F7", Keys.F7), k("F8", Keys.F8), e(10), k("F9", Keys.F9), k("F10", Keys.F10), k("F11", Keys.F11), k("F12", Keys.F12),  },
-        new Key[] { k("~\n`", Keys.GRAVE_ACCENT), k("!\n1", Keys.NUM_1), k("@\n2", Keys.NUM_2), k("#\n3", Keys.NUM_3), k("$\n4", Keys.NUM_4), k("%\n5", Keys.NUM_5), k("^\n6", Keys.NUM_6), k("&\n7", Keys.NUM_7), k("*\n8", Keys.NUM_8), k("(\n9", Keys.NUM_9), k(")\n0", Keys.NUM_0), k("_\n-", Keys.MINUS), k("+\n=", Keys.EQUAL), k("<--", Keys.BACKSPACE, 44) },
-        new Key[] { k("Tab", Keys.TAB, 32), k("Q", Keys.Q), k("W", Keys.W), k("E", Keys.E), k("R", Keys.R), k("T", Keys.T), k("Y", Keys.Y), k("U", Keys.U), k("I", Keys.I), k("O", Keys.O), k("P", Keys.P), k("{\n[", Keys.LEFT_BRACKET), k("}\n]", Keys.RIGHT_BRACKET), k("Enter", Keys.ENTER, 32),  },
-        new Key[] { k("Caps", Keys.CAPS_LOCK, 38), k("A", Keys.A), k("S", Keys.S), k("D", Keys.D), k("F", Keys.F), k("G", Keys.G), k("H", Keys.H), k("J", Keys.J), k("K", Keys.K), k("L", Keys.L), k(":\n;", Keys.SEMICOLON), k("\"\n'", Keys.APOSTROPHE), k("|\n\\", Keys.BACKSLASH), k("", Keys.ENTER, 26) },
-        new Key[] { k("Shift", Keys.LEFT_SHIFT, 54), k("Z", Keys.Z), k("X", Keys.X), k("C", Keys.C), k("V", Keys.V), k("B", Keys.B), k("N", Keys.N), k("M", Keys.M), k("<\n,", Keys.COMMA), k(">\n.", Keys.PERIOD), k("?\n/", Keys.SLASH), k("Shift", Keys.RIGHT_SHIFT, 54) },
+        new Key[] { k("~\n`", Keys.GRAVE_ACCENT, '`', '~'), k("!\n1", Keys.NUM_1, '1', '!'), k("@\n2", Keys.NUM_2, '2', '@'), k("#\n3", Keys.NUM_3, '3', '#'), k("$\n4", Keys.NUM_4, '4', '$'), k("%\n5", Keys.NUM_5, '5', '%'), k("^\n6", Keys.NUM_6, '6', '^'), k("&\n7", Keys.NUM_7, '7', '&'), k("*\n8", Keys.NUM_8, '8', '*'), k("(\n9", Keys.NUM_9, '9', '('), k(")\n0", Keys.NUM_0, '0', ')'), k("_\n-", Keys.MINUS, '-', '_'), k("+\n=", Keys.EQUAL), k("<--", Keys.BACKSPACE, 44) },
+        new Key[] { k("Tab", Keys.TAB, 32), k("Q", Keys.Q), k("W", Keys.W), k("E", Keys.E), k("R", Keys.R), k("T", Keys.T), k("Y", Keys.Y), k("U", Keys.U), k("I", Keys.I), k("O", Keys.O), k("P", Keys.P), k("{\n[", Keys.LEFT_BRACKET, '[', '{'), k("}\n]", Keys.RIGHT_BRACKET, ']', '}'), k("Enter", Keys.ENTER, 32),  },
+        new Key[] { k("Caps", Keys.CAPS_LOCK, 38), k("A", Keys.A), k("S", Keys.S), k("D", Keys.D), k("F", Keys.F), k("G", Keys.G), k("H", Keys.H), k("J", Keys.J), k("K", Keys.K), k("L", Keys.L), k(":\n;", Keys.SEMICOLON, ';', ':'), k("\"\n'", Keys.APOSTROPHE, '\'', '"'), k("|\n\\", Keys.BACKSLASH, '\\', '|'), k("", Keys.ENTER, 26) },
+        new Key[] { k("Shift", Keys.LEFT_SHIFT, 54), k("Z", Keys.Z), k("X", Keys.X), k("C", Keys.C), k("V", Keys.V), k("B", Keys.B), k("N", Keys.N), k("M", Keys.M), k("<\n,", Keys.COMMA, ',', '<'), k(">\n.", Keys.PERIOD, '.', '>'), k("?\n/", Keys.SLASH, '/', '?'), k("Shift", Keys.RIGHT_SHIFT, 54) },
         new Key[] { k("Ctrl", Keys.LEFT_CONTROL, 35), k("⛏", Keys.MENU, 30), k("Alt", Keys.LEFT_ALT, 30), k(" ", Keys.SPACE, 24 * 6), k("Alt", Keys.RIGHT_ALT, 30), k("Ctrl", Keys.RIGHT_CONTROL, 36) }
     };
 
@@ -129,8 +129,9 @@ public class KeyboardView extends ScreenElement {
                             }
                         } else {
                             this.gui.input.keyDown(id, type == ClickType.RIGHT_DOWN);
-
-                            var character = this.gui.input.isKeyDown(Keys.LEFT_SHIFT) ? id : Character.toLowerCase(id);
+                            var shift = this.gui.input.isKeyDown(Keys.LEFT_SHIFT) || this.gui.input.isKeyDown(Keys.RIGHT_SHIFT);
+                            var character = shift || this.gui.input.isKeyDown(Keys.CAPS_LOCK)
+                                ? key.upperCase() : key.lowerCase();
                             if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
                                 this.gui.input.queueEvent("char", new Object[]{Character.toString(character), false});
                             }
@@ -163,17 +164,21 @@ public class KeyboardView extends ScreenElement {
 
 
     static private Key k(String display, int key, int width) {
-        return new Key(display, key, width);
-    }
-    static private Key k(String display, int key) {
-        return new Key(display, key, 20);
-    }
-    static private Key e() {
-        return new Key("", -1, 20);
-    }
-    static private Key e(int width) {
-        return new Key("", -1, width);
+        return new Key(display, key, width, (char) Character.toLowerCase(key), (char) Character.toUpperCase(key));
     }
 
-    private record Key(String display, int key, int width) {}
+    static private Key k(String display, int key) {
+        return new Key(display, key, 20, (char) Character.toLowerCase(key), (char) Character.toUpperCase(key));
+    }
+    static private Key k(String display, int key, char lowerCase, char upperCase) {
+        return new Key(display, key, 20, lowerCase, upperCase);
+    }
+    static private Key e() {
+        return new Key("", -1, 20, (char) 0, (char) 0);
+    }
+    static private Key e(int width) {
+        return new Key("", -1, width, (char) 0, (char) 0);
+    }
+
+    private record Key(String display, int key, int width, char lowerCase, char upperCase) {}
 }

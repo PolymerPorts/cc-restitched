@@ -106,24 +106,35 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     private void updateDisplay() {
         {
             var image = new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight());
-            CanvasUtils.clear(image, CanvasColor.BLACK_LOW);
 
             var monitor = this.getServerMonitor();
             if (monitor != null) {
-                CanvasUtils.draw(image, 0, 0, 128 * this.width, 128 * this.height, monitor.getTerminal().getRendered(this.level.getGameTime()));
+                var screen = monitor.getTerminal().getRendered(this.level.getGameTime());
+                var scale = (image.getWidth() - 40) / (double) screen.getWidth();
+
+                int sWidth = (int) (screen.getWidth() * scale);
+                int sHeight = (int) (screen.getHeight() * scale);
+
+                CanvasUtils.draw(image, 20, 21, sWidth, sHeight, screen);
+            } else {
+                CanvasUtils.fill(image, 20, 21, image.getWidth() - 20, image.getHeight() - 21, CanvasColor.BLACK_LOWEST);
             }
 
             CanvasUtils.draw(this.canvas, 0, 0, image);
         }
 
+        this.updateWatchers();
+    }
+
+    public void updateWatchers() {
         if (this.level != null) {
             var pos = this.getBlockPos();
             var players = ((ServerLevel) this.level).getPlayers((p) -> p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 4096);
 
             for (var player : players) {
                 if (!this.currentWatchers.contains(player)) {
-                    this.display.addPlayer(player);
                     this.canvas.addPlayer(player);
+                    this.display.addPlayer(player);
                     this.currentWatchers.add(player);
                 }
             }
@@ -166,6 +177,14 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     public void setRemoved()
     {
         super.setRemoved();
+        if (this.display != null) {
+            this.display.destroy();
+            this.display = null;
+        }
+        if (this.canvas != null) {
+            this.canvas.destroy();
+            this.canvas = null;
+        }
     }
 
     @Override
@@ -238,14 +257,18 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
             expand();
         }
 
-        if( xIndex != 0 || yIndex != 0 || serverMonitor == null ) return;
 
-        serverMonitor.clearChanged();
+        if( xIndex != 0 || yIndex != 0 ) return;
 
-        if( serverMonitor.pollResized() ) eachComputer( c -> c.queueEvent( "monitor_resize", c.getAttachmentName() ) );
-        if( serverMonitor.pollTerminalChanged() ) MonitorWatcher.enqueue( this );
+        if (serverMonitor == null) {
+            this.updateDisplay();
+        } else {
+            serverMonitor.clearChanged();
 
-        this.updateDisplay();
+            if (serverMonitor.pollResized()) eachComputer(c -> c.queueEvent("monitor_resize", c.getAttachmentName()));
+            if (serverMonitor.pollTerminalChanged()) MonitorWatcher.enqueue(this);
+            this.updateDisplay();
+        }
     }
 
     @Nonnull
@@ -641,6 +664,12 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     void removeComputer( IComputerAccess computer )
     {
         computers.remove( computer );
+    }
+
+    public static <T extends BlockEntity> void tickVisuals(Level level, BlockPos blockPos, BlockState blockState, T t) {
+        if (t instanceof TileMonitor tileMonitor) {
+            tileMonitor.updateWatchers();
+        }
     }
 
     //    @Nonnull
