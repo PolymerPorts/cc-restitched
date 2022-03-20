@@ -10,6 +10,7 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.IPeripheralTile;
 import dan200.computercraft.core.terminal.Terminal;
+import dan200.computercraft.fabric.poly.Fonts;
 import dan200.computercraft.shared.common.ServerTerminal;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.network.client.TerminalState;
@@ -88,36 +89,73 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     private void updateDisplaySize() {
         if (this.display != null) {
             this.display.destroy();
+            this.display = null;
         }
         if (this.canvas != null) {
             this.canvas.destroy();
+            this.canvas = null;
         }
 
         this.currentWatchers.clear();
 
         if (this.xIndex == 0 && this.yIndex == 0) {
-            var dir = this.getBlockState().getValue(BlockMonitor.FACING);
+            var facing = this.getBlockState().getValue(BlockMonitor.FACING);
+            var orientation = this.getBlockState().getValue(BlockMonitor.ORIENTATION);
+
+            int rotation;
+            Direction dir;
+            BlockPos blockPos;
+
+            if (orientation == Direction.NORTH) {
+                rotation = 0;
+                dir = facing;
+                blockPos = this.getBlockPos().relative(dir).above(this.height - 1);
+            } else {
+                dir = orientation;
+                rotation = facing.get2DDataValue();
+                blockPos = this.getBlockPos().relative(dir).relative(facing, orientation.getStepY() * (1 - this.height));
+            }
+
             this.canvas = DrawableCanvas.create(this.width, this.height);
-            this.display = VirtualDisplay.of(this.canvas, this.getBlockPos().relative(dir).above(this.height - 1), dir, 0, true);
+            this.display = VirtualDisplay.of(this.canvas, blockPos, dir, rotation, true, this::onClick);
             this.updateDisplay();
         }
     }
 
+    private void onClick(ServerPlayer player, int x, int y) {
+        var monitor = this.getServerMonitor();
+        if (monitor != null) {
+            x = (x - 20) / Fonts.FONT_WIDTH / monitor.getTextScale();
+            y = (y - 21) / Fonts.FONT_HEIGHT / monitor.getTextScale();
+            if (x >= 0 && y >= 0 && x < monitor.getTerminal().getWidth() && y < monitor.getTerminal().getHeight()) {
+                int finalX = x + 1;
+                int finalY = y + 1;
+                eachComputer(c -> c.queueEvent( "monitor_touch", c.getAttachmentName(), finalX, finalY) );
+            }
+
+        }
+
+    }
+
     private void updateDisplay() {
+        if (this.canvas == null) {
+            return;
+        }
+
         {
             var image = new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight());
 
             var monitor = this.getServerMonitor();
             if (monitor != null) {
                 var screen = monitor.getTerminal().getRendered(this.level.getGameTime());
-                var scale = (image.getWidth() - 40) / (double) screen.getWidth();
+                var scale = monitor.getTextScale();
 
                 int sWidth = (int) (screen.getWidth() * scale);
                 int sHeight = (int) (screen.getHeight() * scale);
 
                 CanvasUtils.draw(image, 20, 21, sWidth, sHeight, screen);
             } else {
-                CanvasUtils.fill(image, 20, 21, image.getWidth() - 20, image.getHeight() - 21, CanvasColor.BLACK_LOWEST);
+                CanvasUtils.fill(image, 20, 21, image.getWidth() - 20, image.getHeight() - 20, CanvasColor.BLACK_LOWEST);
             }
 
             CanvasUtils.draw(this.canvas, 0, 0, image);
@@ -127,7 +165,7 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     }
 
     public void updateWatchers() {
-        if (this.level != null) {
+        if (this.level != null && this.display != null && this.canvas != null) {
             var pos = this.getBlockPos();
             var players = ((ServerLevel) this.level).getPlayers((p) -> p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 4096);
 
