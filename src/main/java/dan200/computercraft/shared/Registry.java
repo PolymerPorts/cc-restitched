@@ -34,6 +34,7 @@ import dan200.computercraft.shared.pocket.peripherals.PocketSpeaker;
 import dan200.computercraft.shared.turtle.blocks.BlockTurtle;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import dan200.computercraft.shared.turtle.core.TurtlePlayer;
+import dan200.computercraft.shared.turtle.inventory.ContainerTurtle;
 import dan200.computercraft.shared.turtle.items.ItemTurtle;
 import dan200.computercraft.shared.turtle.upgrades.TurtleCraftingTable;
 import dan200.computercraft.shared.turtle.upgrades.TurtleModem;
@@ -45,15 +46,17 @@ import eu.pb4.polymer.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.api.item.PolymerBlockItem;
 import eu.pb4.polymer.api.item.PolymerHeadBlockItem;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -77,6 +80,7 @@ public final class Registry
             ModBlockEntities.CABLE,
             ModBlocks.CABLE,
             ModItems.CABLE,
+            ModContainers.COMPUTER,
             ModEntities.TURTLE_PLAYER
         };
 
@@ -95,10 +99,10 @@ public final class Registry
         }
 
         public static final BlockMonitor MONITOR_NORMAL =
-            register( "monitor_normal", new BlockMonitor( properties(), () -> ModBlockEntities.MONITOR_NORMAL, Blocks.SMOOTH_STONE ) );
+            register( "monitor_normal", new BlockMonitor( monitorProperties(), () -> ModBlockEntities.MONITOR_NORMAL, Blocks.SMOOTH_STONE ) );
 
         public static final BlockMonitor MONITOR_ADVANCED =
-            register( "monitor_advanced", new BlockMonitor( properties(), () -> ModBlockEntities.MONITOR_ADVANCED, Blocks.GOLD_BLOCK ) );
+            register( "monitor_advanced", new BlockMonitor( monitorProperties(), () -> ModBlockEntities.MONITOR_ADVANCED, Blocks.GOLD_BLOCK ) );
 
         public static final BlockComputer<TileComputer> COMPUTER_NORMAL =
             register( "computer_normal", new BlockComputer<>( properties(), ComputerFamily.NORMAL, () -> ModBlockEntities.COMPUTER_NORMAL ) );
@@ -107,7 +111,7 @@ public final class Registry
             register( "computer_advanced", new BlockComputer<>( properties(), ComputerFamily.ADVANCED, () -> ModBlockEntities.COMPUTER_ADVANCED ) );
 
         public static final BlockComputer<TileCommandComputer> COMPUTER_COMMAND =
-            register( "computer_command", new BlockComputer<>( FabricBlockSettings.copyOf( Blocks.STONE ).strength( -1, 6000000.0F ), ComputerFamily.COMMAND, () -> ModBlockEntities.COMPUTER_COMMAND ) );
+            register( "computer_command", new BlockComputer<>( properties().strength( -1, 6000000.0F ), ComputerFamily.COMMAND, () -> ModBlockEntities.COMPUTER_COMMAND ) );
 
         public static final BlockTurtle TURTLE_NORMAL =
             register( "turtle_normal", new BlockTurtle( turtleProperties(), ComputerFamily.NORMAL, () -> ModBlockEntities.TURTLE_NORMAL ) );
@@ -139,6 +143,11 @@ public final class Registry
         private static BlockBehaviour.Properties properties()
         {
             return BlockBehaviour.Properties.of( Material.STONE ).strength( 2F ).noOcclusion();
+        }
+
+        private static BlockBehaviour.Properties monitorProperties()
+        {
+            return BlockBehaviour.Properties.of( Material.STONE ).strength( 2F );
         }
 
         private static BlockBehaviour.Properties turtleProperties()
@@ -292,6 +301,28 @@ public final class Registry
         }
     }
 
+    public static class ModContainers
+    {
+        public static final MenuType<ContainerComputerBase> COMPUTER =
+            ContainerData.toType( new ResourceLocation( MOD_ID, "computer" ), ModContainers.COMPUTER, ComputerContainerData::new, ComputerMenuWithoutInventory::new );
+
+        public static final MenuType<ContainerComputerBase> POCKET_COMPUTER =
+            ContainerData.toType( new ResourceLocation( MOD_ID, "pocket_computer" ), ModContainers.POCKET_COMPUTER, ComputerContainerData::new, ComputerMenuWithoutInventory::new );
+
+        public static final MenuType<ContainerComputerBase> POCKET_COMPUTER_NO_TERM =
+            ContainerData.toType( new ResourceLocation( MOD_ID, "pocket_computer_no_term" ), ModContainers.POCKET_COMPUTER_NO_TERM, ComputerContainerData::new, ComputerMenuWithoutInventory::new );
+
+        public static final MenuType<ContainerTurtle> TURTLE =
+            ContainerData.toType( new ResourceLocation( MOD_ID, "turtle" ), ComputerContainerData::new, ContainerTurtle::new );
+
+        public static final MenuType<ContainerDiskDrive> DISK_DRIVE =
+            registerSimple( "disk_drive", ContainerDiskDrive::new );
+
+        public static final MenuType<ContainerPrinter> PRINTER =
+            registerSimple( "printer", ContainerPrinter::new );
+
+        public static final MenuType<ContainerHeldItem> PRINTOUT =
+            ContainerData.toType( new ResourceLocation( MOD_ID, "printout" ), HeldItemContainerData::new, ContainerHeldItem::createPrintout );
     public static class ModEntities
     {
         public static final EntityType<TurtlePlayer> TURTLE_PLAYER =

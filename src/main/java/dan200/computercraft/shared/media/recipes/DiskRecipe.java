@@ -10,6 +10,7 @@ import dan200.computercraft.shared.util.Colour;
 import dan200.computercraft.shared.util.ColourTracker;
 import dan200.computercraft.shared.util.ColourUtils;
 import eu.pb4.polymer.api.item.PolymerRecipe;
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeColor;
@@ -26,7 +27,7 @@ import javax.annotation.Nonnull;
 public class DiskRecipe extends CustomRecipe implements PolymerRecipe
 {
     private final Ingredient paper = Ingredient.of( Items.PAPER );
-    private final Ingredient redstone = Ingredient.of( Items.REDSTONE );
+    private final Ingredient redstone = Ingredient.of( ConventionalItemTags.REDSTONE_DUSTS );
 
     public DiskRecipe( ResourceLocation id )
     {

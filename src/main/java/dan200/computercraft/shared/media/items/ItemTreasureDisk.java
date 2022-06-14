@@ -18,6 +18,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
@@ -45,7 +49,7 @@ public class ItemTreasureDisk extends Item implements IMedia, PolymerItem
     public void appendHoverText( @Nonnull ItemStack stack, @Nullable Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag tooltipOptions )
     {
         String label = getTitle( stack );
-        if( !label.isEmpty() ) list.add( new TextComponent( label ) );
+        if( !label.isEmpty() ) list.add( Component.literal( label ) );
     }
 
     @Override

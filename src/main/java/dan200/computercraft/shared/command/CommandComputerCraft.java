@@ -21,13 +21,13 @@ import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.util.IDAssigner;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -65,7 +65,7 @@ public final class CommandComputerCraft
     {
     }
 
-    public static void register( CommandDispatcher<CommandSourceStack> dispatcher, Boolean dedicated )
+    public static void register( CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandBuildContext, Commands.CommandSelection commandSelection )
     {
         dispatcher.register( choice( "computercraft" )
             .then( literal( "dump" )
@@ -140,9 +140,10 @@ public final class CommandComputerCraft
             .then( command( "shutdown" )
                 .requires( UserLevel.OWNER_OP )
                 .argManyValue( "computers", manyComputers(), s -> ComputerCraft.serverComputerRegistry.getComputers() )
-                .executes( ( context, computers ) -> {
+                .executes( ( context, computerSelectors ) -> {
                     int shutdown = 0;
-                    for( ServerComputer computer : unwrap( context.getSource(), computers ) )
+                    Set<ServerComputer> computers = unwrap( context.getSource(), computerSelectors );
+                    for( ServerComputer computer : computers )
                     {
                         if( computer.isOn() ) shutdown++;
                         computer.shutdown();
@@ -154,9 +155,10 @@ public final class CommandComputerCraft
             .then( command( "turn-on" )
                 .requires( UserLevel.OWNER_OP )
                 .argManyValue( "computers", manyComputers(), s -> ComputerCraft.serverComputerRegistry.getComputers() )
-                .executes( ( context, computers ) -> {
+                .executes( ( context, computerSelectors ) -> {
                     int on = 0;
-                    for( ServerComputer computer : unwrap( context.getSource(), computers ) )
+                    Set<ServerComputer> computers = unwrap( context.getSource(), computerSelectors );
+                    for( ServerComputer computer : computers )
                     {
                         if( !computer.isOn() ) on++;
                         computer.turnOn();
@@ -223,6 +225,29 @@ public final class CommandComputerCraft
                     ServerPlayer player = context.getSource().getPlayerOrException();
                     ServerComputer computer = getComputerArgument( context, "computer" );
                     computer.sendTerminalState( player );
+                    ViewComputerContainerData container = new ViewComputerContainerData( computer );
+                    container.open( player, new ExtendedScreenHandlerFactory()
+                    {
+                        @Override
+                        public void writeScreenOpeningData( ServerPlayer player, FriendlyByteBuf buf )
+                        {
+                            container.toBytes( buf );
+                        }
+
+                        @Nonnull
+                        @Override
+                        public Component getDisplayName()
+                        {
+                            return Component.translatable( "gui.computercraft.view_computer" );
+                        }
+
+                        @Nonnull
+                        @Override
+                        public AbstractContainerMenu createMenu( int id, @Nonnull Inventory player, @Nonnull Player entity )
+                        {
+                            return new ContainerViewComputer( id, player, computer );
+                        }
+                    } );
                     return 1;
                 } ) )
 
@@ -269,7 +294,7 @@ public final class CommandComputerCraft
 
     private static Component linkComputer( CommandSourceStack source, ServerComputer serverComputer, int computerId )
     {
-        MutableComponent out = new TextComponent( "" );
+        MutableComponent out = Component.literal( "" );
 
         // Append the computer instance
         if( serverComputer == null )

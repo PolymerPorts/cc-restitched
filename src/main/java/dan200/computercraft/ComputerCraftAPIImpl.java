@@ -6,6 +6,7 @@
 package dan200.computercraft;
 
 import dan200.computercraft.api.ComputerCraftAPI.IComputerCraftAPI;
+import dan200.computercraft.api.detail.IDetailProvider;
 import dan200.computercraft.api.filesystem.IMount;
 import dan200.computercraft.api.filesystem.IWritableMount;
 import dan200.computercraft.api.lua.GenericSource;
@@ -25,6 +26,7 @@ import dan200.computercraft.core.filesystem.ResourceMount;
 import dan200.computercraft.shared.*;
 import dan200.computercraft.shared.peripheral.modem.wired.TileCable;
 import dan200.computercraft.shared.peripheral.modem.wired.TileWiredModemFull;
+import dan200.computercraft.shared.peripheral.generic.data.DetailProviders;
 import dan200.computercraft.shared.peripheral.modem.wireless.WirelessNetwork;
 import dan200.computercraft.shared.util.IDAssigner;
 import dan200.computercraft.shared.wired.WiredNode;
@@ -41,7 +43,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 public final class ComputerCraftAPIImpl implements IComputerCraftAPI
@@ -59,9 +60,9 @@ public final class ComputerCraftAPIImpl implements IComputerCraftAPI
         ResourceManager manager = GameInstanceUtils.getServer().getResourceManager();
         try
         {
-            return manager.getResource( new ResourceLocation( domain, subPath ) ).getInputStream();
+            return manager.getResource( new ResourceLocation( domain, subPath ) ).get().open();
         }
-        catch( IOException ignored )
+        catch( Throwable ignored )
         {
             return null;
         }
@@ -157,6 +158,12 @@ public final class ComputerCraftAPIImpl implements IComputerCraftAPI
     public void registerAPIFactory( @Nonnull ILuaAPIFactory factory )
     {
         ApiFactories.register( factory );
+    }
+
+    @Override
+    public <T> void registerDetailProvider( @Nonnull Class<T> type, @Nonnull IDetailProvider<T> provider )
+    {
+        DetailProviders.registerProvider( type, provider );
     }
 
     @Nonnull

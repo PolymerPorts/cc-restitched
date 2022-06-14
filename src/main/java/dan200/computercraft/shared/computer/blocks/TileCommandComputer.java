@@ -13,8 +13,6 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -27,7 +25,6 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class TileCommandComputer extends TileComputer
 {
@@ -51,7 +48,7 @@ public class TileCommandComputer extends TileComputer
         }
 
         @Override
-        public void sendMessage( @Nonnull Component textComponent, @Nonnull UUID id )
+        public void sendSystemMessage( @Nonnull Component textComponent )
         {
             output.put( output.size() + 1, textComponent.getString() );
         }
@@ -99,9 +96,9 @@ public class TileCommandComputer extends TileComputer
         }
 
         return new CommandSourceStack( receiver,
-            new Vec3( worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5 ), Vec2.ZERO,
+            Vec3.atCenterOf( worldPosition ), Vec2.ZERO,
             (ServerLevel) getLevel(), 2,
-            name, new TextComponent( name ),
+            name, Component.literal( name ),
             getLevel().getServer(), null
         );
     }
@@ -115,22 +112,22 @@ public class TileCommandComputer extends TileComputer
     }
 
     @Override
-    public boolean isUsable( Player player, boolean ignoreRange )
+    public boolean isUsable( Player player )
     {
-        return isUsable( player ) && super.isUsable( player, ignoreRange );
+        return isCommandUsable( player ) && super.isUsable( player );
     }
 
-    public static boolean isUsable( Player player )
+    public static boolean isCommandUsable( Player player )
     {
         MinecraftServer server = player.getServer();
         if( server == null || !server.isCommandBlockEnabled() )
         {
-            player.displayClientMessage( new TranslatableComponent( "advMode.notEnabled" ), true );
+            player.displayClientMessage( Component.translatable( "advMode.notEnabled" ), true );
             return false;
         }
         else if( ComputerCraft.commandRequireCreative ? !player.canUseGameMasterBlocks() : !server.getPlayerList().isOp( player.getGameProfile() ) )
         {
-            player.displayClientMessage( new TranslatableComponent( "advMode.notAllowed" ), true );
+            player.displayClientMessage( Component.translatable( "advMode.notAllowed" ), true );
             return false;
         }
 

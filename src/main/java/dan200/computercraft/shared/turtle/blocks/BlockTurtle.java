@@ -76,6 +76,22 @@ public class BlockTurtle extends BlockComputerBase<TileTurtle> implements Simple
     @Nonnull
     @Override
     @Deprecated
+    public BlockState mirror( BlockState state, Mirror mirrorIn )
+    {
+        return state.rotate( mirrorIn.getRotation( state.getValue( FACING ) ) );
+    }
+
+    @Nonnull
+    @Override
+    @Deprecated
+    public BlockState rotate( BlockState state, Rotation rot )
+    {
+        return state.setValue( FACING, rot.rotate( state.getValue( FACING ) ) );
+    }
+
+    @Nonnull
+    @Override
+    @Deprecated
     public RenderShape getRenderShape( @Nonnull BlockState state )
     {
         return RenderShape.ENTITYBLOCK_ANIMATED;

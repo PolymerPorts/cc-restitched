@@ -7,10 +7,6 @@ package dan200.computercraft.shared.common;
 
 import eu.pb4.polymer.api.utils.PolymerObject;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +15,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 
@@ -70,35 +65,13 @@ public abstract class TileGeneric extends BlockEntity implements PolymerObject
         return 8.0;
     }
 
-    public boolean isUsable( Player player, boolean ignoreRange )
+    public boolean isUsable( Player player )
     {
         if( player == null || !player.isAlive() || getLevel().getBlockEntity( getBlockPos() ) != this ) return false;
-        if( ignoreRange ) return true;
 
         double range = getInteractRange( player );
         BlockPos pos = getBlockPos();
         return player.getCommandSenderWorld() == getLevel() &&
             player.distanceToSqr( pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5 ) <= range * range;
-    }
-
-    @Override
-    public CompoundTag getUpdateTag()
-    {
-        return this.saveWithoutMetadata();
-    }
-
-    @Nullable
-    @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket()
-    {
-        return ClientboundBlockEntityDataPacket.create( this );
-    }
-
-    protected void readDescription( @Nonnull CompoundTag nbt )
-    {
-    }
-
-    protected void writeDescription( @Nonnull CompoundTag nbt )
-    {
     }
 }

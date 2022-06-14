@@ -9,7 +9,6 @@ import com.mojang.authlib.GameProfile;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.turtle.FakePlayer;
 import dan200.computercraft.api.turtle.ITurtleAccess;
-import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.util.DirectionUtil;
 import dan200.computercraft.shared.util.InventoryUtil;
 import dan200.computercraft.shared.util.WorldUtil;
@@ -24,7 +23,6 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
@@ -196,13 +194,6 @@ public final class TurtlePlayer extends FakePlayer implements PolymerEntity
         }
 
         getInventory().setChanged();
-    }
-
-    @Nonnull
-    @Override
-    public EntityType<?> getType()
-    {
-        return Registry.ModEntities.TURTLE_PLAYER;
     }
 
     @Override

@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
 import javax.annotation.Nonnull;
+import java.nio.ByteBuffer;
 
 public class Terminal {
     private static final String base16 = "0123456789abcdef";
@@ -173,7 +174,7 @@ public class Terminal {
         return palette;
     }
 
-    public synchronized void blit(String text, String textColour, String backgroundColour) {
+    public synchronized void blit(ByteBuffer text, ByteBuffer textColour, ByteBuffer backgroundColour) {
         int x = cursorX;
         int y = cursorY;
         if (y >= 0 && y < height) {

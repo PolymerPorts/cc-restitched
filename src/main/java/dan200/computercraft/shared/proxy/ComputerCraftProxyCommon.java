@@ -10,8 +10,10 @@ import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.api.peripheral.IPeripheralTile;
 import dan200.computercraft.api.turtle.event.TurtleEvent;
+import dan200.computercraft.core.apis.http.NetworkUtils;
 import dan200.computercraft.core.computer.MainThread;
 import dan200.computercraft.core.filesystem.ResourceMount;
+import dan200.computercraft.core.tracking.ComputerMBean;
 import dan200.computercraft.core.tracking.Tracking;
 import dan200.computercraft.shared.TurtlePermissions;
 import dan200.computercraft.shared.command.CommandComputerCraft;
@@ -30,7 +32,7 @@ import dan200.computercraft.shared.peripheral.monitor.MonitorWatcher;
 import dan200.computercraft.shared.turtle.FurnaceRefuelHandler;
 import dan200.computercraft.shared.util.Config;
 import dan200.computercraft.shared.util.TickScheduler;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -39,7 +41,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.RecordItem;
@@ -49,8 +51,6 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 
 public final class ComputerCraftProxyCommon
 {
-    private static MinecraftServer server;
-
     public static void init()
     {
         MonitorWatcher.init();
@@ -104,20 +104,18 @@ public final class ComputerCraftProxyCommon
             TickScheduler.tick();
         } );
 
-        ServerLifecycleEvents.SERVER_STARTED.register( server -> {
-            ComputerCraftProxyCommon.server = server;
-            ComputerCraft.serverComputerRegistry.reset();
-            WirelessNetwork.resetNetworks();
-            MainThread.reset();
-            Tracking.reset();
+        ServerLifecycleEvents.SERVER_STARTING.register( server -> {
+            if( server instanceof DedicatedServer dediServer && dediServer.getProperties().enableJmxMonitoring )
+            {
+                ComputerMBean.register();
+            }
+            resetState();
+            ComputerMBean.registerTracker();
         } );
 
-        ServerLifecycleEvents.SERVER_STOPPING.register( server -> {
+        ServerLifecycleEvents.SERVER_STOPPED.register( server -> {
             ComputerCraft.serverComputerRegistry.reset();
-            WirelessNetwork.resetNetworks();
-            MainThread.reset();
-            Tracking.reset();
-            ComputerCraftProxyCommon.server = null;
+            resetState();
         } );
 
         ServerBlockEntityEvents.BLOCK_ENTITY_UNLOAD.register( ( blockEntity, world ) -> {
@@ -143,6 +141,15 @@ public final class ComputerCraftProxyCommon
         TurtleEvent.EVENT_BUS.register( new TurtlePermissions() );
 
         ResourceManagerHelper.get( PackType.SERVER_DATA ).registerReloadListener( ResourceMount.RELOAD_LISTENER );
+    }
+
+    private static void resetState()
+    {
+        ComputerCraft.serverComputerRegistry.reset();
+        MainThread.reset();
+        WirelessNetwork.resetNetworks();
+        Tracking.reset();
+        NetworkUtils.reset();
     }
 
     public static void registerLoot()

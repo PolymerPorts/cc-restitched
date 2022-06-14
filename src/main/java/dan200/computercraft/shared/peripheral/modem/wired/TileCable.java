@@ -20,7 +20,7 @@ import dan200.computercraft.shared.util.TickScheduler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -54,8 +54,7 @@ public class TileCable extends TileGeneric implements IPeripheralTile
         @Override
         public Vec3 getPosition()
         {
-            BlockPos pos = getBlockPos();
-            return new Vec3( pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5 );
+            return Vec3.atCenterOf( getBlockPos() );
         }
 
         @Override
@@ -97,8 +96,7 @@ public class TileCable extends TileGeneric implements IPeripheralTile
         @Override
         public Vec3 getPosition()
         {
-            BlockPos pos = getBlockPos().relative( getDirection() );
-            return new Vec3( pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5 );
+            return Vec3.atCenterOf( getBlockPos().relative( getDirection() ) );
         }
 
         @Nonnull
@@ -227,7 +225,7 @@ public class TileCable extends TileGeneric implements IPeripheralTile
     @Override
     public InteractionResult onActivate( Player player, InteractionHand hand, BlockHitResult hit )
     {
-        if( player.isCrouching() ) return InteractionResult.PASS;
+        if( player.isCrouching() || !player.mayBuild() ) return InteractionResult.PASS;
         if( !canAttachPeripheral() ) return InteractionResult.FAIL;
 
         if( getLevel().isClientSide ) return InteractionResult.SUCCESS;
@@ -239,12 +237,12 @@ public class TileCable extends TileGeneric implements IPeripheralTile
         {
             if( oldName != null )
             {
-                player.displayClientMessage( new TranslatableComponent( "chat.computercraft.wired_modem.peripheral_disconnected",
+                player.displayClientMessage( Component.translatable( "chat.computercraft.wired_modem.peripheral_disconnected",
                     ChatHelpers.copy( oldName ) ), false );
             }
             if( newName != null )
             {
-                player.displayClientMessage( new TranslatableComponent( "chat.computercraft.wired_modem.peripheral_connected",
+                player.displayClientMessage( Component.translatable( "chat.computercraft.wired_modem.peripheral_connected",
                     ChatHelpers.copy( newName ) ), false );
             }
         }

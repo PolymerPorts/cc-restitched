@@ -49,6 +49,7 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
     private static final String NBT_UPGRADE = "Upgrade";
     private static final String NBT_UPGRADE_INFO = "UpgradeInfo";
     public static final String NBT_LIGHT = "Light";
+    private static final String NBT_ON = "On";
 
     private static final String NBT_INSTANCE = "Instanceid";
     private static final String NBT_SESSION = "SessionId";
@@ -72,7 +73,7 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
     {
         ItemStack result = new ItemStack( this );
         if( id >= 0 ) result.getOrCreateTag().putInt( NBT_ID, id );
-        if( label != null ) result.setHoverName( new TextComponent( label ) );
+        if( label != null ) result.setHoverName( Component.literal( label ) );
         if( upgrade != null ) result.getOrCreateTag().putString( NBT_UPGRADE, upgrade.getUpgradeID().toString() );
         if( colour != -1 ) result.getOrCreateTag().putInt( NBT_COLOUR, colour );
         return result;
@@ -81,7 +82,7 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
     @Override
     public void fillItemCategory( @Nonnull CreativeModeTab group, @Nonnull NonNullList<ItemStack> stacks )
     {
-        if( !allowdedIn( group ) ) return;
+        if( !allowedIn( group ) ) return;
         stacks.add( create( -1, null, -1, null ) );
         PocketUpgrades.getVanillaUpgrades().map( x -> create( -1, null, -1, x ) ).forEach( stacks::add );
     }
@@ -109,6 +110,13 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
         {
             changed = true;
             setLabel( stack, label );
+        }
+
+        boolean on = computer.isOn();
+        if( on != isMarkedOn( stack ) )
+        {
+            changed = true;
+            stack.getOrCreateTag().putBoolean( NBT_ON, on );
         }
 
         // Update pocket upgrade
@@ -188,8 +196,8 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
         IPocketUpgrade upgrade = getUpgrade( stack );
         if( upgrade != null )
         {
-            return new TranslatableComponent( baseString + ".upgraded",
-                new TranslatableComponent( upgrade.getUnlocalisedAdjective() )
+            return Component.translatable( baseString + ".upgraded",
+                Component.translatable( upgrade.getUnlocalisedAdjective() )
             );
         }
         else
@@ -207,7 +215,7 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
             int id = getComputerID( stack );
             if( id >= 0 )
             {
-                list.add( new TranslatableComponent( "gui.computercraft.tooltip.computer_id", id )
+                list.add( Component.translatable( "gui.computercraft.tooltip.computer_id", id )
                     .withStyle( ChatFormatting.GRAY ) );
             }
         }
@@ -244,6 +252,10 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
             computer.updateValues( entity, stack, getUpgrade( stack ) );
             computer.addAPI( new PocketAPI( computer ) );
             ComputerCraft.serverComputerRegistry.add( instanceID, computer );
+
+            // Only turn on when initially creating the computer, rather than each tick.
+            if( isMarkedOn( stack ) && entity instanceof Player ) computer.turnOn();
+
             if( inventory != null ) inventory.setChanged();
         }
         computer.setLevel( world );
@@ -295,7 +307,7 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
     {
         if( label != null )
         {
-            stack.setHoverName( new TextComponent( label ) );
+            stack.setHoverName( Component.literal( label ) );
         }
         else
         {
@@ -335,6 +347,32 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
     private static void setSessionID( @Nonnull ItemStack stack, int sessionID )
     {
         stack.getOrCreateTag().putInt( NBT_SESSION, sessionID );
+    }
+
+    private static boolean isMarkedOn( @Nonnull ItemStack stack )
+    {
+        CompoundTag nbt = stack.getTag();
+        return nbt != null && nbt.getBoolean( NBT_ON );
+    }
+
+    public static ComputerState getState( @Nonnull ItemStack stack )
+    {
+        ClientComputer computer = getClientComputer( stack );
+        return computer == null ? ComputerState.OFF : computer.getState();
+    }
+
+    public static int getLightState( @Nonnull ItemStack stack )
+    {
+        ClientComputer computer = getClientComputer( stack );
+        if( computer != null && computer.isOn() )
+        {
+            CompoundTag computerNBT = computer.getUserData();
+            if( computerNBT != null && computerNBT.contains( NBT_LIGHT ) )
+            {
+                return computerNBT.getInt( NBT_LIGHT );
+            }
+        }
+        return -1;
     }
 
     public static IPocketUpgrade getUpgrade( @Nonnull ItemStack stack )

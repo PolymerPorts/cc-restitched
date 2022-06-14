@@ -34,8 +34,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -78,11 +78,15 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     private VirtualDisplay display = null;
     private Set<ServerPlayer> currentWatchers = new HashSet<>();
 
+    private BlockPos bbPos;
+    private BlockState bbState;
+    private int bbX, bbY, bbWidth, bbHeight;
+    private AABB boundingBox;
+
     public TileMonitor( BlockEntityType<? extends TileMonitor> type, BlockPos pos, BlockState state, boolean advanced )
     {
         super( type, pos, state );
         this.advanced = advanced;
-
         this.updateDisplaySize();
     }
 
@@ -138,9 +142,17 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     }
 
     private void updateDisplay() {
-        if (this.canvas == null) {
+        if (this.xIndex != 0 && this.yIndex != 0) {
+            if (this.canvas != null) {
+                this.canvas.destroy();
+            }
+            if (this.display != null) {
+                this.display.destroy();
+            }
+
             return;
         }
+
 
         {
             var image = new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight());
@@ -208,6 +220,8 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
         if (this.display != null) {
             this.display.destroy();
             this.canvas.destroy();
+            this.display = null;
+            this.canvas = null;
         }
     }
 
@@ -311,7 +325,7 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
 
     @Nonnull
     @Override
-    public IPeripheral getPeripheral( @NotNull Direction side )
+    public IPeripheral getPeripheral( @Nonnull Direction side )
     {
         createServerMonitor(); // Ensure the monitor is created before doing anything else.
         if( peripheral == null ) peripheral = new MonitorPeripheral( this );
@@ -366,6 +380,7 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
             BlockEntity te = level.getBlockEntity( toWorldPos( 0, 0 ) );
             if( !(te instanceof TileMonitor) ) return null;
 
+            this.updateDisplaySize();
             return serverMonitor = ((TileMonitor) te).createServerMonitor();
         }
     }
@@ -409,6 +424,8 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
             .setValue( BlockMonitor.STATE, MonitorEdgeState.fromConnections(
                 yIndex < height - 1, yIndex > 0,
                 xIndex > 0, xIndex < width - 1 ) ), 2 );
+
+        this.updateDisplaySize();
 
     }
 
@@ -706,6 +723,9 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
 
     public static <T extends BlockEntity> void tickVisuals(Level level, BlockPos blockPos, BlockState blockState, T t) {
         if (t instanceof TileMonitor tileMonitor) {
+            if ((tileMonitor.xIndex != 0 || tileMonitor.yIndex != 0) && tileMonitor.display != null) {
+                tileMonitor.updateDisplaySize();
+            }
             tileMonitor.updateWatchers();
         }
     }
@@ -725,4 +745,34 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
     //            Math.max( startPos.getZ(), endPos.getZ() ) + 1
     //        );
     //    }
+    @Nonnull
+    public AABB getRenderBoundingBox()
+    {
+        // We attempt to cache the bounding box to save having to do property lookups (and allocations!) on every frame.
+        // Unfortunately the AABB does depend on quite a lot of state, so we need to add a bunch of extra fields -
+        // ideally these'd be a single object, but I don't think worth doing until Java has value types.
+        if( boundingBox != null && getBlockState().equals( bbState ) && getBlockPos().equals( bbPos ) &&
+            xIndex == bbX && yIndex == bbY && width == bbWidth && height == bbHeight )
+        {
+            return boundingBox;
+        }
+
+        bbState = getBlockState();
+        bbPos = getBlockPos();
+        bbX = xIndex;
+        bbY = yIndex;
+        bbWidth = width;
+        bbHeight = height;
+
+        BlockPos startPos = toWorldPos( 0, 0 );
+        BlockPos endPos = toWorldPos( width, height );
+        return boundingBox = new AABB(
+            Math.min( startPos.getX(), endPos.getX() ),
+            Math.min( startPos.getY(), endPos.getY() ),
+            Math.min( startPos.getZ(), endPos.getZ() ),
+            Math.max( startPos.getX(), endPos.getX() ) + 1,
+            Math.max( startPos.getY(), endPos.getY() ) + 1,
+            Math.max( startPos.getZ(), endPos.getZ() ) + 1
+        );
+    }
 }

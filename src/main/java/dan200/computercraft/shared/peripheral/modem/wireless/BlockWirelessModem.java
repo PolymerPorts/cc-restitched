@@ -17,6 +17,10 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -96,6 +100,22 @@ public class BlockWirelessModem extends BlockGeneric implements SimpleWaterlogge
         return defaultBlockState()
             .setValue( FACING, placement.getClickedFace().getOpposite() )
             .setValue( WATERLOGGED, getFluidStateForPlacement( placement ) );
+    }
+
+    @Nonnull
+    @Override
+    @Deprecated
+    public BlockState mirror( BlockState state, Mirror mirrorIn )
+    {
+        return state.rotate( mirrorIn.getRotation( state.getValue( FACING ) ) );
+    }
+
+    @Nonnull
+    @Override
+    @Deprecated
+    public BlockState rotate( BlockState state, Rotation rot )
+    {
+        return state.setValue( FACING, rot.rotate( state.getValue( FACING ) ) );
     }
 
     @Override

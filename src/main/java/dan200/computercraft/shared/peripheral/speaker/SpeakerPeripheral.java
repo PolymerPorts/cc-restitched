@@ -24,7 +24,6 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static dan200.computercraft.api.lua.LuaValues.checkFinite;
@@ -52,7 +51,7 @@ public abstract class SpeakerPeripheral implements IPeripheral
 
     private long clock = 0;
     private long lastPositionTime;
-    private Vec3 lastPosition;
+    private SpeakerPosition lastPosition;
 
     private long lastPlayTime;
 
@@ -67,8 +66,9 @@ public abstract class SpeakerPeripheral implements IPeripheral
     {
         clock++;
 
-        Vec3 pos = getPosition();
-        Level level = getLevel();
+        SpeakerPosition position = getPosition();
+        Level level = position.level();
+        Vec3 pos = position.position();
         if( level == null ) return;
         MinecraftServer server = level.getServer();
 
@@ -79,7 +79,7 @@ public abstract class SpeakerPeripheral implements IPeripheral
                 lastPlayTime = clock;
                 server.getPlayerList().broadcast(
                     null, pos.x, pos.y, pos.z, sound.volume * 16, level.dimension(),
-                    new ClientboundCustomSoundPacket( sound.location, SoundSource.RECORDS, pos, sound.volume, sound.pitch )
+                    new ClientboundCustomSoundPacket( sound.location, SoundSource.RECORDS, pos, sound.volume, sound.pitch, 0 )
                 );
             }
             pendingNotes.clear();
@@ -123,7 +123,7 @@ public abstract class SpeakerPeripheral implements IPeripheral
                 new SpeakerPlayClientMessage( getSource(), pos, sound.location, sound.volume, sound.pitch ),
                 level, pos, sound.volume * 16
             );*/
-            syncedPosition( pos );
+            syncedPosition( position );
         }
         else if( dfpwmState != null && dfpwmState.shouldSendPending( now ) )
         {
@@ -133,7 +133,7 @@ public abstract class SpeakerPeripheral implements IPeripheral
                 new SpeakerAudioClientMessage( getSource(), pos, dfpwmState.getVolume(), dfpwmState.pullPending( now ) ),
                 getLevel().getChunkAt( new BlockPos( pos ) )
             );*/
-            syncedPosition( pos );
+            syncedPosition( position );
 
             // And notify computers that we have space for more audio.
             synchronized( computers )
@@ -148,25 +148,19 @@ public abstract class SpeakerPeripheral implements IPeripheral
         // Push position updates to any speakers which have ever played a note,
         // have moved by a non-trivial amount and haven't had a position update
         // in the last second.
-        if( lastPosition != null && (clock - lastPositionTime) >= 20 )
+        if( lastPosition != null && (clock - lastPositionTime) >= 20 && !lastPosition.withinDistance( position, 0.1 ) )
         {
-            Vec3 position = getPosition();
-            if( lastPosition.distanceToSqr( position ) >= 0.1 )
-            {
-                /*NetworkHandler.sendToAllTracking(
-                    new SpeakerMoveClientMessage( getSource(), position ),
-                    getLevel().getChunkAt( new BlockPos( position ) )
-                );*/
-                syncedPosition( position );
-            }
+            // TODO: What to do when entities move away? How do we notify people left behind that they're gone.
+            /*NetworkHandler.sendToAllTracking(
+                new SpeakerMoveClientMessage( getSource(), position ),
+                level.getChunkAt( new BlockPos( pos ) )
+            );*/
+            syncedPosition( position );
         }
     }
 
-    @Nullable
-    public abstract Level getLevel();
-
     @Nonnull
-    public abstract Vec3 getPosition();
+    public abstract SpeakerPosition getPosition();
 
     @Nonnull
     public UUID getSource()
@@ -303,7 +297,7 @@ public abstract class SpeakerPeripheral implements IPeripheral
      * computer is lagging.
      * :::
      *
-     * {@literal @}{speaker_audio} provides a more complete guide in to using speakers
+     * {@literal @}{speaker_audio} provides a more complete guide to using speakers
      *
      * @param context The Lua context.
      * @param audio   The audio data to play.
@@ -368,7 +362,7 @@ public abstract class SpeakerPeripheral implements IPeripheral
         shouldStop = true;
     }
 
-    private void syncedPosition( Vec3 position )
+    private void syncedPosition( SpeakerPosition position )
     {
         lastPosition = position;
         lastPositionTime = clock;
