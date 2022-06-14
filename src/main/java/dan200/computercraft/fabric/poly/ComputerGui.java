@@ -13,6 +13,7 @@ import dan200.computercraft.shared.computer.core.IContainerComputer;
 import dan200.computercraft.shared.computer.core.InputState;
 import dan200.computercraft.shared.computer.upload.FileSlice;
 import dan200.computercraft.shared.computer.upload.FileUpload;
+import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import eu.pb4.mapcanvas.api.core.*;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
@@ -26,8 +27,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerPlayer;
@@ -189,6 +189,9 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
 
             this.renderer.add(terminalView);
 
+            if (computer instanceof TileTurtle turtle) {
+                this.renderer.add(new TurtleInventoryView(centerX + terminal.getRenderedWidth() / 2 + 24, termY - 24, turtle));
+            }
 
             this.keyboard = new KeyboardView(centerX - (KeyboardView.KEYBOARD_WIDTH / 2), terminalView.y + terminalView.height() + 16, this);
             this.renderer.add(this.keyboard);
@@ -228,7 +231,7 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
         }
         this.open();
 
-        player.connection.send(new ClientboundSetActionBarTextPacket(new TranslatableComponent("polyport.cc.press_to_close", "Ctrl", "Q (Drop)"/*new KeybindComponent("key.drop")*/).withStyle(ChatFormatting.DARK_RED)));
+        player.connection.send(new ClientboundSetActionBarTextPacket(Component.translatable("polyport.cc.press_to_close", "Ctrl", "Q (Drop)"/*new KeybindComponent("key.drop")*/).withStyle(ChatFormatting.DARK_RED)));
     }
 
     public static void open(ServerPlayer player, ComputerDisplayAccess computer) {
@@ -317,7 +320,12 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
             this.keysToReleaseNextTick.add(Keys.ENTER);
             this.currentInput = "";
         }
+    }
 
+    public void onCommandInput(String command) {
+        this.input.keyDown(Keys.ENTER, false);
+        this.keysToReleaseNextTick.add(Keys.ENTER);
+        this.currentInput = "";
     }
 
     public void onCommandSuggestion(int id, String fullCommand) {
@@ -474,7 +482,7 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
                 double i = Math.min(Math.max(Double.parseDouble(arg), 1), 8);
                 gui.setDistance(i);
             } catch (Exception e) {
-                gui.player.connection.send(new ClientboundSetActionBarTextPacket(new TranslatableComponent("")));
+                gui.player.connection.send(new ClientboundSetActionBarTextPacket(Component.empty()));
             }
         });
 
@@ -486,7 +494,7 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
         for (var s : ACTIONS.keySet()) {
             var entry = new ClientboundPlayerInfoPacket.PlayerUpdate(
                 new GameProfile(new UUID(0x54345345634l, i++), ";" + s), 999, GameType.SPECTATOR,
-                new TextComponent(";" + s).withStyle(ChatFormatting.DARK_RED)
+                Component.literal(";" + s).withStyle(ChatFormatting.DARK_RED), null
             );
             ADDITIONAL_SUGGESTIONS_PACKET.getEntries().add(entry);
             ADDITIONAL_SUGGESTIONS_REMOVE_PACKET.getEntries().add(entry);

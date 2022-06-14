@@ -27,8 +27,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -357,22 +355,7 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
 
     public static ComputerState getState( @Nonnull ItemStack stack )
     {
-        ClientComputer computer = getClientComputer( stack );
-        return computer == null ? ComputerState.OFF : computer.getState();
-    }
-
-    public static int getLightState( @Nonnull ItemStack stack )
-    {
-        ClientComputer computer = getClientComputer( stack );
-        if( computer != null && computer.isOn() )
-        {
-            CompoundTag computerNBT = computer.getUserData();
-            if( computerNBT != null && computerNBT.contains( NBT_LIGHT ) )
-            {
-                return computerNBT.getInt( NBT_LIGHT );
-            }
-        }
-        return -1;
+        return ComputerState.OFF;
     }
 
     public static IPocketUpgrade getUpgrade( @Nonnull ItemStack stack )

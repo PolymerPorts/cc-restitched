@@ -100,10 +100,6 @@ public final class ComputerCraft
     // Logging
     public static final Logger log = LogManager.getLogger( MOD_ID );
 
-    public static CreativeModeTab MAIN_GROUP = PolymerItemGroup.create( new ResourceLocation( MOD_ID, "main" ), Component.literal("Computer Craft"), () -> new ItemStack(ModBlocks.COMPUTER_NORMAL) );
-
-    @Override
-    public void onInitialize()
     public static void onInitialize()
     {
         ComputerCraftProxyCommon.init();

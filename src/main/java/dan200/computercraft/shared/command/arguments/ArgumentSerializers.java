@@ -7,20 +7,19 @@ package dan200.computercraft.shared.command.arguments;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import dan200.computercraft.ComputerCraft;
-import net.minecraft.commands.synchronization.ArgumentSerializer;
-import net.minecraft.commands.synchronization.ArgumentTypes;
-import net.minecraft.commands.synchronization.EmptyArgumentSerializer;
+
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.resources.ResourceLocation;
 
 public final class ArgumentSerializers
 {
     @SuppressWarnings( "unchecked" )
-    private static <T extends ArgumentType<?>> void registerUnsafe( ResourceLocation id, Class<T> type, ArgumentSerializer<?> serializer )
+    private static <T extends ArgumentType<?>> void registerUnsafe( ResourceLocation id, Class type, ArgumentTypeInfo serializer )
     {
 
     }
 
-    private static <T extends ArgumentType<?>> void register( ResourceLocation id, Class<T> type, ArgumentSerializer<T> serializer )
+    private static <T extends ArgumentType<?>> void register( ResourceLocation id, Class<T> type, ArgumentTypeInfo<?, ?> serializer )
     {
 
     }

@@ -43,6 +43,16 @@ public abstract class ServerGamePacketListenerImplMixin {
         }
     }
 
+    @Inject(method = "handleChatCommand", at = @At("HEAD"), cancellable = true)
+    private void ccp_onChat(ServerboundChatCommandPacket serverboundChatCommandPacket, CallbackInfo ci) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {
+            this.server.execute(() -> {
+                computerGui.onCommandInput(serverboundChatCommandPacket.command());
+            });
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "handleMovePlayer", at = @At("HEAD"), cancellable = true)
     private void ccp_onMove(ServerboundMovePlayerPacket serverboundMovePlayerPacket, CallbackInfo ci) {
         if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {

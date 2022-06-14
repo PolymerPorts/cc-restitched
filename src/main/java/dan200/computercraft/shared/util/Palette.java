@@ -5,7 +5,6 @@
  */
 package dan200.computercraft.shared.util;
 
-import dan200.computercraft.client.render.text.FixedWidthFontRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -54,7 +53,7 @@ public class Palette
     }
 
     /**
-     * Get the colour as a set of bytes rather than floats. This is called frequently by {@link FixedWidthFontRenderer},
+     * Get the colour as a set of bytes rather than floats. This is called frequently by {},
      * as our vertex format uses bytes.
      *
      * This allows us to do the conversion once (when setting the colour) rather than for every vertex, at the cost of

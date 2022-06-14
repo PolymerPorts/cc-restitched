@@ -67,6 +67,10 @@ public final class CommandComputerCraft
 
     public static void register( CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandBuildContext, Commands.CommandSelection commandSelection )
     {
+        if (true) {
+            return;
+        }
+
         dispatcher.register( choice( "computercraft" )
             .then( literal( "dump" )
                 .requires( UserLevel.OWNER_OP )
@@ -225,29 +229,6 @@ public final class CommandComputerCraft
                     ServerPlayer player = context.getSource().getPlayerOrException();
                     ServerComputer computer = getComputerArgument( context, "computer" );
                     computer.sendTerminalState( player );
-                    ViewComputerContainerData container = new ViewComputerContainerData( computer );
-                    container.open( player, new ExtendedScreenHandlerFactory()
-                    {
-                        @Override
-                        public void writeScreenOpeningData( ServerPlayer player, FriendlyByteBuf buf )
-                        {
-                            container.toBytes( buf );
-                        }
-
-                        @Nonnull
-                        @Override
-                        public Component getDisplayName()
-                        {
-                            return Component.translatable( "gui.computercraft.view_computer" );
-                        }
-
-                        @Nonnull
-                        @Override
-                        public AbstractContainerMenu createMenu( int id, @Nonnull Inventory player, @Nonnull Player entity )
-                        {
-                            return new ContainerViewComputer( id, player, computer );
-                        }
-                    } );
                     return 1;
                 } ) )
 

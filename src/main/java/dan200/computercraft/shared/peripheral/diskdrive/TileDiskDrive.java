@@ -106,7 +106,7 @@ public final class TileDiskDrive extends TileGeneric implements IPeripheralTile,
             return InteractionResult.PASS;
         } else {
             // Open the GUI
-            if( !getLevel().isClientSide && isUsable( player ) ) player.openMenu( this );
+            if( !getLevel().isClientSide && isUsable( player ) ) this.openMenu((ServerPlayer) player);
             return InteractionResult.SUCCESS;
         }
     }
@@ -115,7 +115,7 @@ public final class TileDiskDrive extends TileGeneric implements IPeripheralTile,
         var gui = new SimpleGui(MenuType.HOPPER, player, false);
         gui.setTitle(this.getDisplayName());
         var empty = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
-        empty.setHoverName(TextComponent.EMPTY);
+        empty.setHoverName(Component.empty());
 
         gui.setSlot(0, empty);
         gui.setSlot(1, empty);
