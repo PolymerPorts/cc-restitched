@@ -71,7 +71,7 @@ public class KeyboardView extends ScreenElement {
     }
 
     @Override
-    public void render(DrawableCanvas canvas, long tick) {
+    public void render(DrawableCanvas canvas, long tick, int mouseX, int mouseY) {
         int y = 0;
         for (int l = 0; l < KEYS.length; l++) {
             int x = (KEYBOARD_WIDTH - LINE_WIDTH[l]) / 2;
@@ -79,10 +79,40 @@ public class KeyboardView extends ScreenElement {
                 if (key.key() != -1) {
                     var isHeld = this.gui.input.isKeyDown(key.key());
 
-                    if (key.key() == Keys.ENTER && l == 3) {
-                        CanvasUtils.fill(canvas, this.x + x, this.y + y * 16 - 3, this.x + x + key.width(), this.y + y * 16 + 14, isHeld ? CanvasColor.GRAY_HIGH : CanvasColor.WHITE_GRAY_HIGH);
+                    if (key.key() == Keys.ENTER) {
+                        var tX1 = (KEYBOARD_WIDTH - LINE_WIDTH[2]) / 2;
+                        var tX2 = (KEYBOARD_WIDTH - LINE_WIDTH[3]) / 2;
+
+                        for (var keyTmp : KEYS[2]) {
+                            if (keyTmp.key != Keys.ENTER) {
+                                tX1 += (keyTmp.width() + 2);
+                            }
+                        }
+
+                        for (var keyTmp : KEYS[3]) {
+                            if (keyTmp.key != Keys.ENTER) {
+                                tX2 += (keyTmp.width() + 2);
+                            }
+                        }
+
+                        var color = isHeld
+                            ? CanvasColor.GRAY_HIGH
+                            : ScreenElement.isIn(mouseX, mouseY, this.x + tX1 , this.y + 32 - 3, this.x + tX1 + 32, this.y + 32 + 14)
+                            || ScreenElement.isIn(mouseX, mouseY, this.x + tX2 , this.y + 48 - 3, this.x + tX2 + 26, this.y + 48 + 14)
+                            ? CanvasColor.WHITE_GRAY_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
+
+                        if (l == 3) {
+                            CanvasUtils.fill(canvas, this.x + x, this.y + y * 16 - 3, this.x + x + key.width(), this.y + y * 16 + 14, color);
+                        } else {
+                            CanvasUtils.fill(canvas, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14, color);
+                        }
                     } else {
-                        CanvasUtils.fill(canvas, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14, isHeld ? CanvasColor.GRAY_HIGH : CanvasColor.WHITE_GRAY_HIGH);
+                        var color = isHeld
+                            ? CanvasColor.GRAY_HIGH
+                            : ScreenElement.isIn(mouseX, mouseY, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14)
+                            ? CanvasColor.WHITE_GRAY_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
+
+                        CanvasUtils.fill(canvas, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14, color);
                     }
 
                     var lines = key.display.split("\n");

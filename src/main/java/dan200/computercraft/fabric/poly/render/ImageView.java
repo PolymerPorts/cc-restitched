@@ -12,7 +12,7 @@ public class ImageView extends ScreenElement {
     }
 
     @Override
-    public void render(DrawableCanvas canvas, long tick) {
+    public void render(DrawableCanvas canvas, long tick, int mouseX, int mouseY) {
         CanvasUtils.draw(canvas, this.x, this.y, this.image);
     }
 

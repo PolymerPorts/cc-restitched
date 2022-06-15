@@ -27,10 +27,10 @@ public record CanvasRenderer(DrawableCanvas canvas, List<ScreenElement> elementL
         this.elementList.sort(Comparator.comparing(e -> e.zIndex));
     }
 
-    public void render(long tick) {
+    public void render(long tick, int mouseX, int mouseY) {
         CanvasUtils.clear(this.canvas, CanvasColor.CLEAR_FORCE);
         for (var element : this.elementList) {
-            element.render(this.canvas, tick);
+            element.render(this.canvas, tick, mouseX, mouseY);
         }
     }
 

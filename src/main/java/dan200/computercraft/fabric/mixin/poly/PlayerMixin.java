@@ -1,6 +1,7 @@
 package dan200.computercraft.fabric.mixin.poly;
 
 import dan200.computercraft.fabric.poly.ComputerGui;
+import dan200.computercraft.fabric.poly.MapGui;
 import eu.pb4.sgui.virtual.VirtualScreenHandlerInterface;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
@@ -18,7 +19,7 @@ public class PlayerMixin {
 
     @Inject(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z", shift = At.Shift.BEFORE))
     private void ccp_closeOnDamage(DamageSource damageSource, float f, CallbackInfoReturnable<Boolean> cir) {
-        if (f > 0 && this.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {
+        if (f > 0 && this.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             computerGui.close();
         }
     }

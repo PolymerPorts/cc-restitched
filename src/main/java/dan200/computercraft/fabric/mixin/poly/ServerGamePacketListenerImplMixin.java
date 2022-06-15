@@ -1,6 +1,6 @@
 package dan200.computercraft.fabric.mixin.poly;
 
-import dan200.computercraft.fabric.poly.ComputerGui;
+import dan200.computercraft.fabric.poly.MapGui;
 import eu.pb4.sgui.virtual.VirtualScreenHandlerInterface;
 import eu.pb4.sgui.virtual.hotbar.HotbarScreenHandler;
 import io.netty.util.concurrent.Future;
@@ -35,7 +35,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 
     @Inject(method = "handleChat(Lnet/minecraft/network/protocol/game/ServerboundChatPacket;)V", at = @At("HEAD"), cancellable = true)
     private void ccp_onChat(ServerboundChatPacket serverboundChatPacket, CallbackInfo ci) {
-        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
                 computerGui.onChatInput(serverboundChatPacket.getMessage());
             });
@@ -45,7 +45,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 
     @Inject(method = "handleChatCommand", at = @At("HEAD"), cancellable = true)
     private void ccp_onChat(ServerboundChatCommandPacket serverboundChatCommandPacket, CallbackInfo ci) {
-        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
                 computerGui.onCommandInput(serverboundChatCommandPacket.command());
             });
@@ -55,7 +55,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 
     @Inject(method = "handleMovePlayer", at = @At("HEAD"), cancellable = true)
     private void ccp_onMove(ServerboundMovePlayerPacket serverboundMovePlayerPacket, CallbackInfo ci) {
-        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.send(new ClientboundMoveEntityPacket.Rot(player.getId(), (byte) 0, (byte) 0, player.isOnGround()));
             this.server.execute(() -> {
                 var xRot = serverboundMovePlayerPacket.getXRot(computerGui.xRot);
@@ -70,7 +70,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 
     @Inject(method = "handlePlayerAction", at = @At("HEAD"), cancellable = true)
     private void ccp_onPlayerAction(ServerboundPlayerActionPacket packet, CallbackInfo ci) {
-        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
                 computerGui.onPlayerAction(packet.getAction(), packet.getDirection(), packet.getPos());
             });
@@ -80,9 +80,19 @@ public abstract class ServerGamePacketListenerImplMixin {
 
     @Inject(method = "handleCustomCommandSuggestions", at = @At("HEAD"), cancellable = true)
     private void ccp_onCustomSuggestion(ServerboundCommandSuggestionPacket serverboundCommandSuggestionPacket, CallbackInfo ci) {
-        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof ComputerGui computerGui) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
                 computerGui.onCommandSuggestion(serverboundCommandSuggestionPacket.getId(), serverboundCommandSuggestionPacket.getCommand());
+            });
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "handlePlayerInput", at = @At("HEAD"), cancellable = true)
+    private void ccp_onVehicleMove(ServerboundPlayerInputPacket serverboundPlayerInputPacket, CallbackInfo ci) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
+            this.server.execute(() -> {
+                computerGui.onPlayerInput(serverboundPlayerInputPacket.getXxa(), serverboundPlayerInputPacket.getZza(),  serverboundPlayerInputPacket.isJumping(), serverboundPlayerInputPacket.isShiftKeyDown());
             });
             ci.cancel();
         }

@@ -16,6 +16,7 @@ import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
 import dan200.computercraft.fabric.poly.ComputerGui;
 import dan200.computercraft.shared.PocketUpgrades;
 import dan200.computercraft.shared.common.IColouredItem;
+import dan200.computercraft.shared.computer.blocks.TileComputerBase;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ComputerState;
 import dan200.computercraft.shared.computer.core.ServerComputer;
@@ -171,6 +172,11 @@ public class ItemPocketComputer extends Item implements IComputerItem, IMedia, I
                     @Override
                     public ServerComputer getComputer() {
                         return computer;
+                    }
+
+                    @Override
+                    public TileComputerBase getBlockEntity() {
+                        return null;
                     }
 
                     @Override

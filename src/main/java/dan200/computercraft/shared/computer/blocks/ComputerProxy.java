@@ -5,15 +5,18 @@
  */
 package dan200.computercraft.shared.computer.blocks;
 
+import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
 import dan200.computercraft.shared.computer.core.IComputer;
 import dan200.computercraft.shared.computer.core.ServerComputer;
+import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
 /**
  * A proxy object for computer objects, delegating to {@link IComputer} or {@link TileComputer} where appropriate.
  */
-public final class ComputerProxy
+public final class ComputerProxy implements ComputerDisplayAccess
 {
     private final Supplier<TileComputerBase> get;
 
@@ -87,5 +90,20 @@ public final class ComputerProxy
         TileComputerBase tile = getTile();
         ServerComputer computer = tile.getServerComputer();
         return computer == null ? tile.getLabel() : computer.getLabel();
+    }
+
+    @Override
+    public ServerComputer getComputer() {
+        return this.get.get().getServerComputer();
+    }
+
+    @Override
+    public @Nullable TileComputerBase getBlockEntity() {
+        return this.get.get();
+    }
+
+    @Override
+    public boolean canStayOpen(ServerPlayer player) {
+        return this.get.get().getBlockPos().distSqr(player.getOnPos()) <= 64;
     }
 }

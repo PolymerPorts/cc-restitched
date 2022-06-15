@@ -42,7 +42,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-public abstract class TileComputerBase extends TileGeneric implements IComputerTile, IPeripheralTile, Nameable, ComputerDisplayAccess
+public abstract class TileComputerBase extends TileGeneric implements IComputerTile, IPeripheralTile, Nameable, ComputerDisplayAccess.Getter
 {
     private static final String NBT_ID = "ComputerId";
     private static final String NBT_LABEL = "Label";
@@ -135,7 +135,7 @@ public abstract class TileComputerBase extends TileGeneric implements IComputerT
             {
                 createServerComputer().turnOn();
                 createServerComputer().sendTerminalState( player );
-                ComputerGui.open((ServerPlayer) player, this);
+                ComputerGui.open((ServerPlayer) player, this.getDisplayAccess());
             }
             return InteractionResult.SUCCESS;
         }
@@ -474,12 +474,22 @@ public abstract class TileComputerBase extends TileGeneric implements IComputerT
     }
 
     @Override
-    public ServerComputer getComputer() {
-        return this.getServerComputer();
-    }
+    public ComputerDisplayAccess getDisplayAccess() {
+        return new ComputerDisplayAccess() {
+            @Override
+            public ServerComputer getComputer() {
+                return TileComputerBase.this.getServerComputer();
+            }
 
-    @Override
-    public boolean canStayOpen(ServerPlayer player) {
-        return this.getBlockPos().distSqr(player.blockPosition()) < 64;
+            @Override
+            public TileComputerBase getBlockEntity() {
+                return TileComputerBase.this;
+            }
+
+            @Override
+            public boolean canStayOpen(ServerPlayer player) {
+                return TileComputerBase.this.getBlockPos().distSqr(player.blockPosition()) < 64;
+            }
+        };
     }
 }

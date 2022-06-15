@@ -28,14 +28,14 @@ public class Fonts {
                 var builder = BitmapFontBuilder.create();
                 var builderBack = BitmapFontBuilder.create();
 
-                var image = ImageIO.read(Files.newInputStream(texturePath.resolve("gui/buttons.png")));
+                var image = ImageIO.read(Files.newInputStream(texturePath.resolve("gui/term_font.png")));
 
                 for (int i = 0; i < 256; i++) {
                     int column = i % 16;
                     int row = i / 16;
 
-                    int xStart = 1 + column * (FONT_WIDTH + 2);
-                    int yStart = 1 + row * (FONT_HEIGHT + 2);
+                    int xStart = 0 + column * (FONT_WIDTH + 2);
+                    int yStart = 0 + row * (FONT_HEIGHT + 2);
 
                     var glyph = BitmapFontBuilder.Glyph.of(FONT_WIDTH, FONT_HEIGHT).logicalHeight(FONT_HEIGHT).charWidth(FONT_WIDTH);
                     var glyphBack = BitmapFontBuilder.Glyph.of(FONT_WIDTH, FONT_HEIGHT).logicalHeight(FONT_HEIGHT).charWidth(FONT_WIDTH);
@@ -57,6 +57,7 @@ public class Fonts {
                 font = builder.defaultGlyph(emptyGlyph).build();
                 fontBack = builderBack.defaultGlyph(emptyGlyph).build();
             } catch (Throwable e) {
+                e.printStackTrace();
                 font = DefaultFonts.VANILLA;
                 fontBack = BitmapFontBuilder.create().defaultGlyph(emptyGlyph).build();
             }

@@ -1,10 +1,6 @@
 package dan200.computercraft.fabric.poly;
 
-import com.google.common.base.Predicates;
 import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.RootCommandNode;
 import dan200.computercraft.fabric.poly.render.*;
 import dan200.computercraft.fabric.poly.textures.GuiTextures;
 import dan200.computercraft.fabric.poly.textures.RepeatingCanvas;
@@ -14,84 +10,105 @@ import dan200.computercraft.shared.computer.core.InputState;
 import dan200.computercraft.shared.computer.upload.FileSlice;
 import dan200.computercraft.shared.computer.upload.FileUpload;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
-import eu.pb4.mapcanvas.api.core.*;
-import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
-import eu.pb4.polymer.impl.other.FakeWorld;
-import eu.pb4.sgui.api.gui.HotbarGui;
-import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.*;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.horse.Horse;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
-public final class ComputerGui extends HotbarGui implements IContainerComputer {
+public final class ComputerGui extends MapGui implements IContainerComputer {
 
     private static final ClientboundPlayerInfoPacket ADDITIONAL_SUGGESTIONS_PACKET;
     private static final ClientboundPlayerInfoPacket ADDITIONAL_SUGGESTIONS_REMOVE_PACKET;
 
     private static final Map<String, BiConsumer<ComputerGui, String>> ACTIONS = new HashMap<>();
-    private static final Packet<?> COMMAND_PACKET;
+
+    static {
+
+        for (int i = 0; i < 12; i++) {
+            ACTIONS.put("f" + (i + 1), pressKey(Keys.F1 + i));
+        }
+        ACTIONS.put("enter", pressKey(Keys.ENTER));
+        ACTIONS.put("backspace", pressKey(Keys.BACKSPACE));
+        ACTIONS.put("back", pressKey(Keys.BACKSPACE));
+        ACTIONS.put("esc", pressKey(Keys.ESCAPE));
+        ACTIONS.put("ctrl", pressKey(Keys.LEFT_CONTROL));
+        ACTIONS.put("shift", pressKey(Keys.LEFT_SHIFT));
+        ACTIONS.put("shift_hold", holdKey(Keys.LEFT_SHIFT));
+        ACTIONS.put("tab", pressKey(Keys.TAB));
+        ACTIONS.put("up", pressKey(Keys.UP));
+        ACTIONS.put("down", pressKey(Keys.DOWN));
+        ACTIONS.put("left", pressKey(Keys.LEFT));
+        ACTIONS.put("right", pressKey(Keys.RIGHT));
+        ACTIONS.put("close", (gui, arg) -> gui.close());
+        ACTIONS.put("moveview", (gui, arg) -> {
+            try {
+                double i = Math.min(Math.max(Double.parseDouble(arg), 1), 8);
+                gui.setDistance(i);
+            } catch (Exception e) {
+                gui.player.connection.send(new ClientboundSetActionBarTextPacket(Component.empty()));
+            }
+        });
+
+
+        ADDITIONAL_SUGGESTIONS_PACKET = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER);
+        ADDITIONAL_SUGGESTIONS_REMOVE_PACKET = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER);
+
+        int i = 0;
+        for (var s : ACTIONS.keySet()) {
+            var entry = new ClientboundPlayerInfoPacket.PlayerUpdate(
+                new GameProfile(new UUID(0x54345345634l, i++), ";" + s), 999, GameType.SPECTATOR,
+                Component.literal(";" + s).withStyle(ChatFormatting.DARK_RED), null
+            );
+            ADDITIONAL_SUGGESTIONS_PACKET.getEntries().add(entry);
+            ADDITIONAL_SUGGESTIONS_REMOVE_PACKET.getEntries().add(entry);
+        }
+    }
 
     public final ComputerDisplayAccess computer;
-    public final CanvasIcon cursor;
-    public final Entity entity;
-    public final CombinedPlayerCanvas canvas;
-    public final VirtualDisplay virtualDisplay;
-    public final CanvasRenderer renderer;
     public final ImageButton closeButton;
     public final ImageButton terminateButton;
     public final InputState input = new InputState(this);
-    public final BlockPos pos;
     public final KeyboardView keyboard;
-    public float xRot;
-    public float yRot;
-    public int cursorX;
-    public int cursorY;
-    public int mouseMoves;
     public String currentInput = "";
     public IntSet keysToReleaseNextTick = new IntArraySet();
 
     public ComputerGui(ServerPlayer player, ComputerDisplayAccess computer) {
         super(player);
-        var pos = player.blockPosition().atY(2048);
-        this.pos = pos;
-        var dir = Direction.NORTH;
         this.computer = computer;
-        this.canvas = DrawableCanvas.create(5, 3);
-        this.virtualDisplay = VirtualDisplay.of(this.canvas, pos.relative(dir).relative(dir.getClockWise(), 2).above(), dir, 0, true);
-        this.renderer = CanvasRenderer.of(new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight()));
-
 
         {
             var terminal = this.computer.getComputer().getTerminal();
             int centerX = canvas.getWidth() / 2;
             int centerY = canvas.getHeight() / 2 - 48;
 
+            boolean turtle = computer.getBlockEntity() instanceof TileTurtle;
+
             int termX = centerX - terminal.getRenderedWidth() / 2;
             int termY = centerY - terminal.getRenderedHeight() / 2;
+
+            if (turtle) {
+                termX -= 36;
+            }
 
             var terminalView = new TerminalView(
                 termX, termY,
@@ -108,6 +125,43 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
                 case ADVANCED -> GuiTextures.ADVANCED_COMPUTER;
                 case COMMAND -> GuiTextures.COMMAND_COMPUTER;
             };
+
+            if (turtle) {
+                var xi = termX + terminal.getRenderedWidth() + 32;
+                var yi = termY - 28;
+                var inv = new TurtleInventoryView(xi, yi, this);
+                this.renderer.add(inv);
+
+                this.renderer.add(new ImageView(
+                        xi, yi - compText.top().getHeight(),
+                        new RepeatingCanvas(compText.top(), inv.width(), compText.top().getHeight())
+                    )
+                );
+
+                this.renderer.add(new ImageView(
+                        xi, yi + inv.height(),
+                        new RepeatingCanvas(compText.bottomSmall(), inv.width(), compText.bottomSmall().getHeight())
+                    )
+                );
+
+                this.renderer.add(new ImageView(
+                        xi - compText.leftSide().getWidth(), yi,
+                        new RepeatingCanvas(compText.leftSide(), compText.leftSide().getWidth(), inv.height())
+                    )
+                );
+
+                this.renderer.add(new ImageView(
+                        xi + inv.width(), yi,
+                        new RepeatingCanvas(compText.rightSide(), compText.rightSide().getWidth(), inv.height())
+                    )
+                );
+
+                this.renderer.add(new ImageView(xi - compText.leftTop().getWidth(), yi - compText.leftTop().getHeight(), compText.leftTop()));
+                this.renderer.add(new ImageView(xi + inv.width(), yi - compText.rightTop().getHeight(), compText.rightTop()));
+
+                this.renderer.add(new ImageView(xi - compText.smallLeftBottom().getWidth(), yi + inv.height(), compText.smallLeftBottom()));
+                this.renderer.add(new ImageView(xi + inv.width(), yi + inv.height(), compText.smallRightBottom()));
+            }
 
             {
                 int sideX = termX - compText.sideButtonPlateSide().getWidth() - compText.leftSide().getWidth() + 3;
@@ -189,49 +243,20 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
 
             this.renderer.add(terminalView);
 
-            if (computer instanceof TileTurtle turtle) {
-                this.renderer.add(new TurtleInventoryView(centerX + terminal.getRenderedWidth() / 2 + 24, termY - 24, turtle));
-            }
-
             this.keyboard = new KeyboardView(centerX - (KeyboardView.KEYBOARD_WIDTH / 2), terminalView.y + terminalView.height() + 16, this);
             this.renderer.add(this.keyboard);
         }
 
         this.render();
-        this.canvas.addPlayer(player);
-        this.virtualDisplay.addPlayer(player);
 
-        this.entity = new Horse(EntityType.HORSE, FakeWorld.INSTANCE);
-        this.entity.setPos(pos.getX() + 0.5, pos.getY() - 1, pos.getZ() - 1.8);
-        this.entity.setNoGravity(true);
-        this.entity.setYHeadRot(dir.getOpposite().toYRot());
-        this.entity.setInvisible(true);
 
-        this.cursorX = this.canvas.getWidth();
-        this.cursorY = this.canvas.getHeight();
-        this.cursor = this.canvas.createIcon(MapDecoration.Type.TARGET_POINT, true, this.cursorX, this.cursorY, (byte) 14, null);
-        player.connection.send(this.entity.getAddEntityPacket());
-
-        player.connection.send(new ClientboundSetEntityDataPacket(this.entity.getId(), this.entity.getEntityData(), true));
-        player.connection.send(new ClientboundSetCameraPacket(this.entity));
-        this.xRot = player.getXRot();
-        this.yRot = player.getYRot();
-        var buf = new FriendlyByteBuf(Unpooled.buffer());
-        buf.writeVarInt(this.entity.getId());
-        buf.writeVarIntArray(new int[]{player.getId()});
-        player.connection.send(new ClientboundSetPassengersPacket(buf));
-        player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE, GameType.SPECTATOR.getId()));
-        player.connection.send(new ClientboundMoveEntityPacket.Rot(player.getId(), (byte) 0, (byte) 0, player.isOnGround()));
         player.connection.send(ADDITIONAL_SUGGESTIONS_PACKET);
-
-        player.connection.send(COMMAND_PACKET);
 
         for (int i = 0; i < 9; i++) {
             this.setSlot(i, new ItemStack(Items.STICK));
         }
-        this.open();
 
-        player.connection.send(new ClientboundSetActionBarTextPacket(Component.translatable("polyport.cc.press_to_close", "Ctrl", "Q (Drop)"/*new KeybindComponent("key.drop")*/).withStyle(ChatFormatting.DARK_RED)));
+        this.open();
     }
 
     public static void open(ServerPlayer player, ComputerDisplayAccess computer) {
@@ -240,8 +265,33 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
         }
     }
 
+    private static BiConsumer<ComputerGui, String> pressKey(int key) {
+        return (gui, arg) -> {
+            int i;
+            try {
+                i = Integer.parseInt(arg);
+            } catch (Exception e) {
+                i = 1;
+            }
+
+            for (int a = 0; a < i; a++) {
+                gui.input.keyDown(key, false);
+            }
+            gui.keysToReleaseNextTick.add(key);
+        };
+    }
+
+    private static BiConsumer<ComputerGui, String> holdKey(int key) {
+        return (gui, arg) -> {
+            if (!gui.input.isKeyDown(key)) {
+                gui.input.keyDown(key, true);
+            } else {
+                gui.input.keyUp(key);
+            }
+        };
+    }
+
     public void render() {
-        this.renderer.render(this.player.level.getGameTime());
 
         {
             boolean isIn = this.closeButton.isIn(this.cursorX / 2, this.cursorY / 2);
@@ -256,9 +306,7 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
             this.terminateButton.image = isIn ? GuiTextures.TERMINATE_HOVER : GuiTextures.TERMINATE;
         }
 
-        CanvasUtils.draw(this.canvas, 0, 0, this.renderer.canvas());
-
-        this.canvas.sendUpdates();
+        super.render();
     }
 
     @Override
@@ -277,16 +325,6 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
 
     @Override
     public void onClose() {
-        this.cursor.remove();
-        this.virtualDisplay.removePlayer(this.player);
-        this.virtualDisplay.destroy();
-        this.canvas.removePlayer(this.player);
-        this.canvas.destroy();
-        this.player.server.getCommands().sendCommands(this.player);
-        this.player.connection.send(new ClientboundSetCameraPacket(this.player));
-        this.player.connection.send(new ClientboundRemoveEntitiesPacket(this.entity.getId()));
-        this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE, this.player.gameMode.getGameModeForPlayer().getId()));
-        this.player.connection.send(new ClientboundTeleportEntityPacket(this.player));
         this.player.connection.send(ADDITIONAL_SUGGESTIONS_REMOVE_PACKET);
 
         super.onClose();
@@ -310,7 +348,7 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
             if (!message.startsWith("/")) {
                 for (var character : message.codePoints().toArray()) {
                     if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
-                        this.input.queueEvent("char", new Object[]{ Character.toString(character) });
+                        this.input.queueEvent("char", new Object[]{Character.toString(character)});
                     }
                 }
 
@@ -352,7 +390,7 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
             }
 
             for (; i < command.length(); i++) {
-                this.input.queueEvent("char", new Object[]{ Character.toString(command.charAt(i)) });
+                this.input.queueEvent("char", new Object[]{Character.toString(command.charAt(i))});
             }
 
             this.currentInput = command;
@@ -369,7 +407,7 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
         this.xRot = xRot;
         this.yRot = yRot;
 
-        this.cursorX = this.cursorX + (int) ((xRot > 0.3 ? 3: xRot < -0.3 ? -3 : 0) * (Math.abs(xRot) - 0.3));
+        this.cursorX = this.cursorX + (int) ((xRot > 0.3 ? 3 : xRot < -0.3 ? -3 : 0) * (Math.abs(xRot) - 0.3));
         this.cursorY = this.cursorY + (int) ((yRot > 0.3 ? 3 : yRot < -0.3 ? -3 : 0) * (Math.abs(yRot) - 0.3));
 
         this.cursorX = Mth.clamp(this.cursorX, 5, this.canvas.getWidth() * 2 - 5);
@@ -431,92 +469,5 @@ public final class ComputerGui extends HotbarGui implements IContainerComputer {
         if (action == ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS) {
             this.close();
         }
-    }
-
-    private static BiConsumer<ComputerGui, String> pressKey(int key) {
-        return (gui, arg) -> {
-            int i;
-            try {
-                i = Integer.parseInt(arg);
-            } catch (Exception e) {
-                i = 1;
-            }
-
-            for (int a = 0; a < i; a++) {
-                gui.input.keyDown(key, false);
-            }
-            gui.keysToReleaseNextTick.add(key);
-        };
-    }
-
-    private static BiConsumer<ComputerGui, String> holdKey(int key) {
-        return (gui, arg) -> {
-            if (!gui.input.isKeyDown(key)) {
-                gui.input.keyDown(key, true);
-            } else {
-                gui.input.keyUp(key);
-            }
-        };
-    }
-
-    static {
-
-        for (int i = 0; i < 12; i++) {
-            ACTIONS.put("f" + (i + 1), pressKey(Keys.F1 + i));
-        }
-        ACTIONS.put("enter", pressKey(Keys.ENTER));
-        ACTIONS.put("backspace", pressKey(Keys.BACKSPACE));
-        ACTIONS.put("back", pressKey(Keys.BACKSPACE));
-        ACTIONS.put("esc", pressKey(Keys.ESCAPE));
-        ACTIONS.put("ctrl", pressKey(Keys.LEFT_CONTROL));
-        ACTIONS.put("shift", pressKey(Keys.LEFT_SHIFT));
-        ACTIONS.put("shift_hold", holdKey(Keys.LEFT_SHIFT));
-        ACTIONS.put("tab", pressKey(Keys.TAB));
-        ACTIONS.put("up", pressKey(Keys.UP));
-        ACTIONS.put("down", pressKey(Keys.DOWN));
-        ACTIONS.put("left", pressKey(Keys.LEFT));
-        ACTIONS.put("right", pressKey(Keys.RIGHT));
-        ACTIONS.put("close", (gui, arg) -> gui.close());
-        ACTIONS.put("moveview", (gui, arg) -> {
-            try {
-                double i = Math.min(Math.max(Double.parseDouble(arg), 1), 8);
-                gui.setDistance(i);
-            } catch (Exception e) {
-                gui.player.connection.send(new ClientboundSetActionBarTextPacket(Component.empty()));
-            }
-        });
-
-
-        ADDITIONAL_SUGGESTIONS_PACKET = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER);
-        ADDITIONAL_SUGGESTIONS_REMOVE_PACKET = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER);
-
-        int i = 0;
-        for (var s : ACTIONS.keySet()) {
-            var entry = new ClientboundPlayerInfoPacket.PlayerUpdate(
-                new GameProfile(new UUID(0x54345345634l, i++), ";" + s), 999, GameType.SPECTATOR,
-                Component.literal(";" + s).withStyle(ChatFormatting.DARK_RED), null
-            );
-            ADDITIONAL_SUGGESTIONS_PACKET.getEntries().add(entry);
-            ADDITIONAL_SUGGESTIONS_REMOVE_PACKET.getEntries().add(entry);
-        }
-
-
-
-        var commandNode = new RootCommandNode<SharedSuggestionProvider>();
-
-        commandNode.addChild(
-            new ArgumentCommandNode<>(
-                "command",
-                StringArgumentType.greedyString(),
-                null,
-                Predicates.alwaysTrue(),
-                null,
-                null,
-                true,
-                (ctx, builder) -> null
-            )
-        );
-
-        COMMAND_PACKET = new ClientboundCommandsPacket(commandNode);
     }
 }

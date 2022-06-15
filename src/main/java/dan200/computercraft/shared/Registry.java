@@ -187,7 +187,7 @@ public final class Registry {
     }
 
     public static final class ModItems {
-        private static final CreativeModeTab mainItemGroup = PolymerItemGroup.create(new ResourceLocation(MOD_ID, "main"), Component.literal("Computer Craft"), () -> new ItemStack(ModBlocks.COMPUTER_NORMAL));
+        private static final CreativeModeTab mainItemGroup = PolymerItemGroup.create(new ResourceLocation(MOD_ID, "main"), Component.literal("ComputerCraft"), () -> new ItemStack(ModBlocks.COMPUTER_NORMAL));
 
 
         public static final ItemComputer COMPUTER_NORMAL =

@@ -11,6 +11,7 @@ import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.core.computer.ComputerSide;
+import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.computer.blocks.ComputerProxy;
 import dan200.computercraft.shared.computer.blocks.TileComputerBase;
@@ -28,6 +29,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
@@ -540,5 +542,10 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
         // Mark the other turtle as having moved, and so its peripheral is dead.
         copy.moveState = MoveState.MOVED;
+    }
+
+    @Override
+    public ComputerDisplayAccess getDisplayAccess() {
+        return this.createProxy();
     }
 }

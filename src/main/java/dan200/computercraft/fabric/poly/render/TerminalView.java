@@ -16,7 +16,7 @@ public final class TerminalView extends ScreenElement {
     }
 
     @Override
-    public void render(DrawableCanvas canvas, long tick) {
+    public void render(DrawableCanvas canvas, long tick, int mouseX, int mouseY) {
         CanvasUtils.draw(canvas, this.x, this.y, this.terminal.getRendered(tick));
     }
 

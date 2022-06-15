@@ -244,27 +244,7 @@ sourcesJar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-// Check tasks
 
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "skipped", "failed"
-    }
-}
-
-jacocoTestReport {
-    dependsOn('test')
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
-
-check.dependsOn jacocoTestReport
-
-import com.hierynomus.gradle.license.tasks.LicenseCheck
-import com.hierynomus.gradle.license.tasks.LicenseFormat
 
 license {
     mapping("java", "SLASHSTAR_STYLE")
