@@ -7,6 +7,8 @@ import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class KeyboardView extends ScreenElement {
     private static final Key[][] KEYS = new Key[][] {
@@ -78,6 +80,7 @@ public class KeyboardView extends ScreenElement {
             for (var key : KEYS[l]) {
                 if (key.key() != -1) {
                     var isHeld = this.gui.input.isKeyDown(key.key());
+                    var a = isHeld ? 1 : 0;
 
                     if (key.key() == Keys.ENTER) {
                         var tX1 = (KEYBOARD_WIDTH - LINE_WIDTH[2]) / 2;
@@ -95,31 +98,53 @@ public class KeyboardView extends ScreenElement {
                             }
                         }
 
+                        boolean hover = ScreenElement.isIn(mouseX, mouseY, this.x + tX1 , this.y + 32 - 3, this.x + tX1 + 32, this.y + 32 + 14)
+                            || ScreenElement.isIn(mouseX, mouseY, this.x + tX2 , this.y + 48 - 3, this.x + tX2 + 26, this.y + 48 + 14);
+
                         var color = isHeld
                             ? CanvasColor.GRAY_HIGH
-                            : ScreenElement.isIn(mouseX, mouseY, this.x + tX1 , this.y + 32 - 3, this.x + tX1 + 32, this.y + 32 + 14)
-                            || ScreenElement.isIn(mouseX, mouseY, this.x + tX2 , this.y + 48 - 3, this.x + tX2 + 26, this.y + 48 + 14)
-                            ? CanvasColor.WHITE_GRAY_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
+                            : hover ? CanvasColor.WHITE_GRAY_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
+
+                        var color2 = isHeld
+                            ? CanvasColor.GRAY_LOW
+                            : hover ? CanvasColor.WHITE_GRAY_LOW : CanvasColor.WHITE_GRAY_LOW;
 
                         if (l == 3) {
-                            CanvasUtils.fill(canvas, this.x + x, this.y + y * 16 - 3, this.x + x + key.width(), this.y + y * 16 + 14, color);
+                            if (!isHeld) {
+                                CanvasUtils.fill(canvas, this.x + x, this.y + y * 16 - 3, this.x + x + key.width() + 1, this.y + y * 16 + 14 + 1, color2);
+                            }
+
+                            CanvasUtils.fill(canvas, this.x + x + a, this.y + y * 16 - 3 + a, this.x + x + key.width() + a, this.y + y * 16 + 14 + a, color);
                         } else {
-                            CanvasUtils.fill(canvas, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14, color);
+                            if (!isHeld) {
+                                CanvasUtils.fill(canvas, this.x + x, this.y + y * 16, this.x + x + key.width() + 1, this.y + y * 16 + 14 + 1, color2);
+                            }
+
+                            CanvasUtils.fill(canvas, this.x + x + a, this.y + y * 16 + a, this.x + x + key.width() + a, this.y + y * 16 + 14 + a, color);
                         }
                     } else {
+                        var hover = ScreenElement.isIn(mouseX, mouseY, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14);
+
                         var color = isHeld
                             ? CanvasColor.GRAY_HIGH
-                            : ScreenElement.isIn(mouseX, mouseY, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14)
+                            : hover
                             ? CanvasColor.WHITE_GRAY_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
 
-                        CanvasUtils.fill(canvas, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14, color);
+                        var color2 = isHeld
+                            ? CanvasColor.GRAY_LOW
+                            : hover ? CanvasColor.WHITE_GRAY_LOW : CanvasColor.WHITE_GRAY_LOW;
+
+                        if (!isHeld) {
+                            CanvasUtils.fill(canvas, this.x + x, this.y + y * 16, this.x + x + key.width() + 1, this.y + y * 16 + 14 + 1, color2);
+                        }
+                        CanvasUtils.fill(canvas, this.x + x + a, this.y + y * 16 + a, this.x + x + key.width() + a, this.y + y * 16 + 14 + a, color);
                     }
 
                     var lines = key.display.split("\n");
                     if (lines.length == 1) {
                         var line = lines[0];
                         var width = DefaultFonts.VANILLA.getTextWidth(line, 8);
-                        DefaultFonts.VANILLA.drawText(canvas, line, this.x + x + (key.width() - width) / 2, this.y + y * 16 + 4, 8, CanvasColor.BLACK_HIGH);
+                        DefaultFonts.VANILLA.drawText(canvas, line, this.x + x + (key.width() - width) / 2 + a, this.y + y * 16 + 4 + a, 8, CanvasColor.BLACK_HIGH);
                     } else {
                         var merged = String.join("|", lines);
 
@@ -132,7 +157,7 @@ public class KeyboardView extends ScreenElement {
                         for (int i = 0; i < lines.length; i++) {
                             var line = lines[i];
                             var width = DefaultFonts.VANILLA.getTextWidth(line, 8);
-                            DefaultFonts.VANILLA.drawText(canvas, line, this.x + x + (key.width() - width + startWidth - widthChange * i) / 2, this.y + y * 16 + i * heightChange + startHeight + 1, 8, CanvasColor.BLACK_HIGH);
+                            DefaultFonts.VANILLA.drawText(canvas, line, this.x + x + (key.width() - width + startWidth - widthChange * i) / 2 + a, this.y + y * 16 + i * heightChange + startHeight + 1 + a, 8, CanvasColor.BLACK_HIGH);
                         }
                     }
                 }

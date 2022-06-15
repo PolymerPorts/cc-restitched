@@ -6,6 +6,7 @@
 package dan200.computercraft.shared.turtle.blocks;
 
 import dan200.computercraft.api.turtle.TurtleSide;
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.computer.blocks.BlockComputerBase;
 import dan200.computercraft.shared.computer.blocks.TileComputerBase;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
@@ -14,7 +15,6 @@ import dan200.computercraft.shared.turtle.items.ITurtleItem;
 import dan200.computercraft.shared.turtle.items.TurtleItemFactory;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
 import eu.pb4.polymer.api.block.PolymerHeadBlock;
-import eu.pb4.polymer.api.utils.PolymerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -199,16 +199,16 @@ public class BlockTurtle extends BlockComputerBase<TileTurtle> implements Simple
 
     @Override
     public Block getPolymerBlock(BlockState state) {
-        return Blocks.PLAYER_HEAD;
+        return Blocks.BARRIER;
     }
 
     @Override
-    public BlockState getPolymerBlockState(BlockState state) {
-        return Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, state.getValue(FACING).get2DDataValue() * 4);
+    public void onPolymerBlockSend(ServerPlayer player, BlockPos.MutableBlockPos pos, BlockState blockState) {
+        // noop
     }
 
     @Override
     public String getPolymerSkinValue(BlockState state) {
-        return PolymerUtils.NO_TEXTURE_HEAD_VALUE;
+        return this.getFamily() == ComputerFamily.NORMAL ? HeadTextures.TURTLE : HeadTextures.ADVANCED_TURTLE;
     }
 }

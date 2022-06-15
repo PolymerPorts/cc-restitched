@@ -1,9 +1,9 @@
 {
     "schemaVersion": 1,
     "id": "computercraft",
-    "name": "CC: Restitched (Polymer Ports)",
+    "name": "CC: Restitched with Polymer",
     "version": "${version}",
-    "description": "CC: Restitched for Fabric Server Side.",
+    "description": "CC: Restitched for Fabric Server Side™.",
     "license": "ComputerCraft Public License",
     "icon": "assets/computercraft/pack.png",
     "contact": {
@@ -34,12 +34,6 @@
     "entrypoints": {
         "main": [
             "dan200.computercraft.ComputerCraft::onInitialize"
-        ],
-        "client": [
-            "dan200.computercraft.client.proxy.ComputerCraftProxyClient"
-        ],
-        "modmenu": [
-            "dan200.computercraft.shared.integration.ModMenuIntegration"
         ],
         "fabric-datagen": [
             "dan200.computercraft.data.Generators"

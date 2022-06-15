@@ -6,12 +6,15 @@
 package dan200.computercraft.shared.turtle.blocks;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Pair;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.core.computer.ComputerSide;
+import dan200.computercraft.fabric.mixin.poly.ArmorStandAccessor;
 import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.computer.blocks.ComputerProxy;
 import dan200.computercraft.shared.computer.blocks.TileComputerBase;
@@ -22,23 +25,26 @@ import dan200.computercraft.shared.turtle.apis.TurtleAPI;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.util.*;
 import eu.pb4.polymer.api.utils.PolymerObject;
+import eu.pb4.polymer.api.utils.PolymerUtils;
+import eu.pb4.polymer.impl.other.FakeWorld;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -46,7 +52,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.*;
 
 public class TileTurtle extends TileComputerBase implements ITurtleTile, DefaultInventory, PolymerObject
 {
@@ -66,6 +72,9 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
     private boolean inventoryChanged = false;
     private TurtleBrain brain = new TurtleBrain( this );
     private MoveState moveState = MoveState.NOT_MOVED;
+
+    @Nullable
+    public TurtleModel model = null;
 
     public TileTurtle( BlockEntityType<? extends TileGeneric> type, BlockPos pos, BlockState state, ComputerFamily family )
     {
@@ -134,6 +143,19 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
         {
             super.unload();
         }
+
+        if (this.model != null) {
+            for (var player : this.model.watchers) {
+                player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.main.getId()));
+                if (this.model.right != null) {
+                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.right.getId()));
+                }
+
+                if (this.model.left != null) {
+                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.left.getId()));
+                }
+            }
+        }
     }
 
     @Nonnull
@@ -201,6 +223,20 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
     {
         super.serverTick();
         brain.update();
+
+        if (this.model == null && this.moveState == MoveState.NOT_MOVED) {
+            this.model = new TurtleModel(this.createProxy());
+            this.model.setPos(Vec3.atBottomCenterOf(this.getBlockPos()), this.getDirection());
+        }
+
+        if (this.model != null) {
+            this.model.tick();
+
+            if (this.model.main.getYRot() != this.getDirection().toYRot()) {
+                this.model.setPos(Vec3.atBottomCenterOf(this.getBlockPos()), this.getDirection());
+            }
+        }
+
         if( inventoryChanged )
         {
             ServerComputer computer = getServerComputer();
@@ -540,12 +576,152 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
         brain = copy.brain;
         brain.setOwner( this );
 
+        this.model = copy.model;
+        this.model.setPos(Vec3.atBottomCenterOf(this.getBlockPos()), this.getDirection());
         // Mark the other turtle as having moved, and so its peripheral is dead.
         copy.moveState = MoveState.MOVED;
+        copy.model = null;
     }
 
     @Override
     public ComputerDisplayAccess getDisplayAccess() {
         return this.createProxy();
+    }
+
+    public static class TurtleModel {
+
+        private final ComputerProxy proxy;
+        private final ArmorStand main;
+        @Nullable
+        private final ArmorStand right;
+        @Nullable
+        private final ArmorStand left;
+
+        private final Set<ServerPlayer> watchers = new HashSet<>();
+
+        public TurtleModel(ComputerProxy proxy) {
+            this.proxy = proxy;
+            this.main = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+            this.main.setNoGravity(true);
+            this.main.setInvisible(true);
+            var stack = new ItemStack(Items.PLAYER_HEAD);
+            stack.getOrCreateTag().put("SkullOwner", PolymerUtils.createSkullOwner(this.proxy.getBlockEntity().getFamily() == ComputerFamily.ADVANCED ? HeadTextures.ADVANCED_TURTLE : HeadTextures.TURTLE));
+            this.main.setItemSlot(EquipmentSlot.HEAD, stack);
+
+            var rightUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.RIGHT);
+            if (rightUpgrade != null) {
+                this.right = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+                this.right.setNoGravity(true);
+                this.right.setInvisible(true);
+                ((ArmorStandAccessor) this.right).callSetSmall(rightUpgrade.getCraftingItem().getItem() instanceof BlockItem);
+                this.right.setItemSlot(EquipmentSlot.HEAD, rightUpgrade.getCraftingItem().copy());
+            } else {
+                this.right = null;
+            }
+
+
+            var leftUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.LEFT);
+            if (leftUpgrade != null) {
+                this.left = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+                this.left.setNoGravity(true);
+                this.left.setInvisible(true);
+                ((ArmorStandAccessor) this.left).callSetSmall(leftUpgrade.getCraftingItem().getItem() instanceof BlockItem);
+                this.left.setItemSlot(EquipmentSlot.HEAD, leftUpgrade.getCraftingItem().copy());
+            } else {
+                this.left = null;
+            }
+        }
+
+        public void tick() {
+            boolean active = this.proxy.getBlockEntity() != null;
+
+            for (var player : new ArrayList<>(this.watchers)) {
+                if (player.isRemoved()) {
+                    this.watchers.remove(player);
+                } else if (active && player.getEyePosition().distanceToSqr(this.main.getEyePosition()) > 32*32) {
+                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.main.getId()));
+                    if (this.right != null) {
+                        player.connection.send(new ClientboundRemoveEntitiesPacket(this.right.getId()));
+                    }
+                    if (this.left != null) {
+                        player.connection.send(new ClientboundRemoveEntitiesPacket(this.left.getId()));
+                    }
+                    this.watchers.remove(player);
+                }
+            }
+
+            if (active) {
+                for (var player : ((ServerLevel) this.proxy.getBlockEntity().getLevel()).getPlayers((player) -> player.getEyePosition().distanceToSqr(this.main.getEyePosition()) < 32*32)) {
+                    if (this.watchers.add(player)) {
+                        player.connection.send(this.main.getAddEntityPacket());
+                        player.connection.send(new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData(), true));
+                        player.connection.send(new ClientboundSetEquipmentPacket(this.main.getId(),
+                            List.of(Pair.of(EquipmentSlot.HEAD, this.main.getItemBySlot(EquipmentSlot.HEAD)))));
+
+                        if (this.right != null) {
+                            player.connection.send(this.right.getAddEntityPacket());
+                            player.connection.send(new ClientboundSetEntityDataPacket(this.right.getId(), this.right.getEntityData(), true));
+                            player.connection.send(new ClientboundSetEquipmentPacket(this.right.getId(),
+                                List.of(Pair.of(EquipmentSlot.HEAD, this.right.getItemBySlot(EquipmentSlot.HEAD)))));
+                        }
+
+                        if (this.left != null) {
+                            player.connection.send(this.left.getAddEntityPacket());
+                            player.connection.send(new ClientboundSetEntityDataPacket(this.left.getId(), this.left.getEntityData(), true));
+                            player.connection.send(new ClientboundSetEquipmentPacket(this.left.getId(),
+                                List.of(Pair.of(EquipmentSlot.HEAD, this.left.getItemBySlot(EquipmentSlot.HEAD)))));
+                        }
+                    }
+                }
+            }
+        }
+
+        public void setPos(Vec3 pos, Direction direction) {
+            this.main.setPos(pos.add(0, -1.4, 0));
+            this.main.setYRot(direction.toYRot());
+
+            Packet<ClientGamePacketListener> right;
+            Packet<ClientGamePacketListener> left;
+
+            if (this.right != null) {
+                if (this.right.isSmall()) {
+                    this.right.setPos(pos.add(direction.getStepZ() * -0.3, -0.4, direction.getStepX() * 0.3));
+                } else {
+                    this.right.setPos(pos.add(direction.getStepZ() * -0.65, -1.7, direction.getStepX() * 0.65));
+                }
+                this.right.setYRot(direction.getClockWise().toYRot());
+
+                right = new ClientboundTeleportEntityPacket(this.right);
+            } else {
+                right = null;
+            }
+
+            if (this.left != null) {
+                if (this.left.isSmall()) {
+                    this.left.setPos(pos.add(direction.getStepZ() * 0.3, -0.4, direction.getStepX() * 0.3));
+                    this.left.setYRot(direction.getCounterClockWise().toYRot());
+                } else {
+                    this.left.setPos(pos.add(direction.getStepZ() * 0.1, -1.7, direction.getStepX() * 0.1));
+                    this.left.setYRot(direction.getClockWise().toYRot());
+                }
+
+                left = new ClientboundTeleportEntityPacket(this.left);
+            } else {
+                left = null;
+            }
+
+            var packet = new ClientboundTeleportEntityPacket(this.main);
+            for (var player : this.watchers) {
+                player.connection.send(packet);
+
+                if (right != null) {
+                    player.connection.send(right);
+                }
+
+                if (left != null) {
+                    player.connection.send(left);
+                }
+            }
+        }
     }
 }

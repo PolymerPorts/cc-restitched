@@ -94,7 +94,7 @@ public class MapGui extends HotbarGui {
         this.entity.setInvisible(true);
 
         this.cursorX = this.canvas.getWidth();
-        this.cursorY = this.canvas.getHeight();
+        this.cursorY = this.canvas.getHeight(); // MapDecoration.Type.TARGET_POINT
         this.cursor = this.canvas.createIcon(MapDecoration.Type.TARGET_POINT, true, this.cursorX, this.cursorY, (byte) 14, null);
         player.connection.send(this.entity.getAddEntityPacket());
 

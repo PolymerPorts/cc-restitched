@@ -245,6 +245,8 @@ sourcesJar {
 }
 
 
+import com.hierynomus.gradle.license.tasks.LicenseCheck
+import com.hierynomus.gradle.license.tasks.LicenseFormat
 
 license {
     mapping("java", "SLASHSTAR_STYLE")
