@@ -20,15 +20,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SimpleWaterloggedBlock;
-import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -255,11 +253,37 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
 
     @Override
     public BlockState getPolymerBlockState(BlockState state) {
+        var east = state.getValue(EAST);
+        var west = state.getValue(WEST);
+        var north = state.getValue(NORTH);
+        var south = state.getValue(SOUTH);
+        var up = state.getValue(UP);
+        var down = state.getValue(DOWN);
+
+        if (!(east || north || west || south || up || down)) {
+            return Blocks.ANDESITE_SLAB.defaultBlockState();
+        }
+
+        if (up || down) {
+            if (east && !(west || north || south)) {
+                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST).setValue(StairBlock.HALF,  up ? Half.TOP : Half.BOTTOM);
+            } else if (west && !(east || north || south)) {
+                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
+            } else if (north && !(east || west|| south)) {
+                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
+            } else if (south && !(east || north || west)) {
+                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
+            }
+        }
+
+        boolean forceUp = (east && !(west || north || south)) || (west && !(east || north || south)) || (north && !(east || west|| south)) || (south && !(east || north || west));
+
+
         return Blocks.ANDESITE_WALL.defaultBlockState()
-            .setValue(WallBlock.UP, state.getValue(UP))
-            .setValue(WallBlock.EAST_WALL, state.getValue(EAST) ? WallSide.LOW : WallSide.NONE)
-            .setValue(WallBlock.WEST_WALL, state.getValue(WEST) ? WallSide.LOW : WallSide.NONE)
-            .setValue(WallBlock.NORTH_WALL, state.getValue(NORTH) ? WallSide.LOW : WallSide.NONE)
-            .setValue(WallBlock.SOUTH_WALL, state.getValue(SOUTH) ? WallSide.LOW : WallSide.NONE);
+            .setValue(WallBlock.UP, up || down || ((east || west) && (north || south)) || forceUp)
+            .setValue(WallBlock.EAST_WALL, east ? WallSide.TALL : WallSide.NONE)
+            .setValue(WallBlock.WEST_WALL, west ? WallSide.TALL : WallSide.NONE)
+            .setValue(WallBlock.NORTH_WALL, north ? WallSide.TALL : WallSide.NONE)
+            .setValue(WallBlock.SOUTH_WALL, south ? WallSide.TALL : WallSide.NONE);
     }
 }

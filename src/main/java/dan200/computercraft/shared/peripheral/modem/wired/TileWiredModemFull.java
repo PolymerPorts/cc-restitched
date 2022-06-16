@@ -184,6 +184,10 @@ public class TileWiredModemFull extends TileGeneric implements IPeripheralTile
         if( player.isCrouching() || !player.mayBuild() ) return InteractionResult.PASS;
         if( getLevel().isClientSide ) return InteractionResult.SUCCESS;
 
+        if (hand == InteractionHand.OFF_HAND) {
+            return InteractionResult.FAIL;
+        }
+
         // On server, we interacted if a peripheral was found
         Set<String> oldPeriphNames = getConnectedPeripheralNames();
         togglePeripheralAccess();

@@ -230,6 +230,10 @@ public class TileCable extends TileGeneric implements IPeripheralTile
 
         if( getLevel().isClientSide ) return InteractionResult.SUCCESS;
 
+        if (hand == InteractionHand.OFF_HAND) {
+            return InteractionResult.FAIL;
+        }
+
         String oldName = peripheral.getConnectedName();
         togglePeripheralAccess();
         String newName = peripheral.getConnectedName();

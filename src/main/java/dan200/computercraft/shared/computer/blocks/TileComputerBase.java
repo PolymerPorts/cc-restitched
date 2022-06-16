@@ -128,7 +128,7 @@ public abstract class TileComputerBase extends TileGeneric implements IComputerT
             }
             return InteractionResult.SUCCESS;
         }
-        else if( !player.isCrouching() )
+        else if( !player.isCrouching() && hand == InteractionHand.MAIN_HAND )
         {
             // Regular right click to activate computer
             if( !getLevel().isClientSide && isUsable( player ) )

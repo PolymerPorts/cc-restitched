@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -99,12 +100,20 @@ public class BlockTurtle extends BlockComputerBase<TileTurtle> implements Simple
 
     @Nonnull
     @Override
-    @Deprecated
     public VoxelShape getShape( @Nonnull BlockState state, BlockGetter world, @Nonnull BlockPos pos, @Nonnull CollisionContext context )
     {
         BlockEntity tile = world.getBlockEntity( pos );
         Vec3 offset = tile instanceof TileTurtle turtle ? turtle.getRenderOffset( 1.0f ) : Vec3.ZERO;
         return offset.equals( Vec3.ZERO ) ? DEFAULT_SHAPE : DEFAULT_SHAPE.move( offset.x, offset.y, offset.z );
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext) {
+        if (collisionContext instanceof EntityCollisionContext context && context.getEntity() instanceof ServerPlayer) {
+            return Shapes.block();
+        } else {
+            return this.getShape(blockState, blockGetter, blockPos, collisionContext);
+        }
     }
 
     @Nullable
