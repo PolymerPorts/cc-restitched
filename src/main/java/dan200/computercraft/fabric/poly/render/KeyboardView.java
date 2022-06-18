@@ -1,14 +1,12 @@
 package dan200.computercraft.fabric.poly.render;
 
 import com.google.common.base.Supplier;
-import dan200.computercraft.fabric.poly.ComputerGui;
+import dan200.computercraft.fabric.poly.gui.ComputerGui;
 import dan200.computercraft.fabric.poly.Keys;
 import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class KeyboardView extends ScreenElement {
     private static final Key[][] KEYS = new Key[][] {

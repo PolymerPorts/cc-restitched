@@ -10,7 +10,7 @@ import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.IPeripheralTile;
 import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
-import dan200.computercraft.fabric.poly.ComputerGui;
+import dan200.computercraft.fabric.poly.gui.ComputerGui;
 import dan200.computercraft.shared.BundledRedstone;
 import dan200.computercraft.shared.Peripherals;
 import dan200.computercraft.shared.common.TileGeneric;
@@ -488,7 +488,7 @@ public abstract class TileComputerBase extends TileGeneric implements IComputerT
 
             @Override
             public boolean canStayOpen(ServerPlayer player) {
-                return TileComputerBase.this.getBlockPos().distSqr(player.blockPosition()) < 64;
+                return TileComputerBase.this.isUsable(player);
             }
         };
     }

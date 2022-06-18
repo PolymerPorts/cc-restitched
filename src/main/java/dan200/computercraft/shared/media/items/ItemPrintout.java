@@ -5,6 +5,7 @@
  */
 package dan200.computercraft.shared.media.items;
 
+import dan200.computercraft.fabric.poly.gui.PrintedPageGui;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.ContainerHeldItem;
 import eu.pb4.polymer.api.item.PolymerItem;
@@ -35,11 +36,13 @@ public class ItemPrintout extends Item implements PolymerItem
     public static final int LINES_PER_PAGE = 21;
     public static final int LINE_MAX_LENGTH = 25;
     public static final int MAX_PAGES = 16;
+    private final Item polymerItem;
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayer player) {
-        return Items.FILLED_MAP;
+        return this.polymerItem;
     }
+
 
     public enum Type
     {
@@ -54,6 +57,12 @@ public class ItemPrintout extends Item implements PolymerItem
     {
         super( settings );
         this.type = type;
+
+        this.polymerItem = switch (type) {
+            case BOOK -> Items.WRITTEN_BOOK;
+            case PAGES -> Items.MAP;
+            case PAGE -> Items.PAPER;
+        };
     }
 
     @Override
@@ -67,7 +76,9 @@ public class ItemPrintout extends Item implements PolymerItem
     @Override
     public InteractionResultHolder<ItemStack> use( Level world, @Nonnull Player player, @Nonnull InteractionHand hand )
     {
-
+        if (player instanceof ServerPlayer) {
+            new PrintedPageGui((ServerPlayer) player, player.getItemInHand(hand));
+        }
         return new InteractionResultHolder<>( InteractionResult.SUCCESS, player.getItemInHand( hand ) );
     }
 

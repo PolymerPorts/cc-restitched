@@ -30,9 +30,11 @@ import eu.pb4.polymer.impl.other.FakeWorld;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceLocation;
@@ -146,7 +148,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
         if (this.model != null) {
             for (var player : this.model.watchers) {
-                player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.main.getId()));
+                player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.main.getId(), this.model.color.getId()));
                 if (this.model.right != null) {
                     player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.right.getId()));
                 }
@@ -175,6 +177,9 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
                     if( brain.getDyeColour() != dye )
                     {
                         brain.setDyeColour( dye );
+                        if (this.model != null) {
+                            this.model.setColor(dye);
+                        }
                         if( !player.isCreative() )
                         {
                             currentItem.shrink( 1 );
@@ -191,6 +196,9 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
                     if( brain.getColour() != -1 )
                     {
                         brain.setColour( -1 );
+                        if (this.model != null) {
+                            this.model.setColor(null);
+                        }
                         if( !player.isCreative() )
                         {
                             player.setItemInHand( hand, new ItemStack( Items.BUCKET ) );
@@ -592,6 +600,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
         private final ComputerProxy proxy;
         private final ArmorStand main;
+        private final ArmorStand color;
         @Nullable
         private final ArmorStand right;
         @Nullable
@@ -607,6 +616,12 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             var stack = new ItemStack(Items.PLAYER_HEAD);
             stack.getOrCreateTag().put("SkullOwner", PolymerUtils.createSkullOwner(this.proxy.getBlockEntity().getFamily() == ComputerFamily.ADVANCED ? HeadTextures.ADVANCED_TURTLE : HeadTextures.TURTLE));
             this.main.setItemSlot(EquipmentSlot.HEAD, stack);
+
+            this.color = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+            this.color.setNoGravity(true);
+            this.color.setInvisible(true);
+            ((ArmorStandAccessor) this.color).callSetSmall(true);
+            this.setColor(((TileTurtle) proxy.getBlockEntity()).brain.getDyeColour());
 
             var rightUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.RIGHT);
             if (rightUpgrade != null) {
@@ -639,7 +654,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
                 if (player.isRemoved()) {
                     this.watchers.remove(player);
                 } else if (active && player.getEyePosition().distanceToSqr(this.main.getEyePosition()) > 32*32) {
-                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.main.getId()));
+                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.main.getId(), this.color.getId()));
                     if (this.right != null) {
                         player.connection.send(new ClientboundRemoveEntitiesPacket(this.right.getId()));
                     }
@@ -657,6 +672,11 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
                         player.connection.send(new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData(), true));
                         player.connection.send(new ClientboundSetEquipmentPacket(this.main.getId(),
                             List.of(Pair.of(EquipmentSlot.HEAD, this.main.getItemBySlot(EquipmentSlot.HEAD)))));
+
+                        player.connection.send(this.color.getAddEntityPacket());
+                        player.connection.send(new ClientboundSetEntityDataPacket(this.color.getId(), this.color.getEntityData(), true));
+                        player.connection.send(new ClientboundSetEquipmentPacket(this.color.getId(),
+                            List.of(Pair.of(EquipmentSlot.HEAD, this.color.getItemBySlot(EquipmentSlot.HEAD)))));
 
                         if (this.right != null) {
                             player.connection.send(this.right.getAddEntityPacket());
@@ -676,9 +696,38 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             }
         }
 
+        public void updateName(String name) {
+            var set = (name == null || name.isEmpty());
+            this.main.setCustomNameVisible(!(set));
+            this.main.setCustomName(set ? null : Component.literal(name));
+            var packet = new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData(), false);
+
+            for (var player : this.watchers) {
+                player.connection.send(packet);
+            }
+        }
+
+        public void setColor(DyeColor color) {
+            if (color == null) {
+                this.color.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+            } else {
+                this.color.setItemSlot(EquipmentSlot.HEAD, Registry.ITEM.get(new ResourceLocation(color.getName() + "_wool")).getDefaultInstance());
+            }
+
+            var packet = new ClientboundSetEquipmentPacket(this.color.getId(),
+                List.of(Pair.of(EquipmentSlot.HEAD, this.color.getItemBySlot(EquipmentSlot.HEAD))));
+
+            for (var player : this.watchers) {
+                player.connection.send(packet);
+            }
+        }
+
         public void setPos(Vec3 pos, Direction direction) {
             this.main.setPos(pos.add(0, -1.4, 0));
             this.main.setYRot(direction.toYRot());
+
+            this.color.setPos(pos.add(0, -0.45, 0));
+            this.color.setYRot(direction.toYRot());
 
             Packet<ClientGamePacketListener> right;
             Packet<ClientGamePacketListener> left;
@@ -698,10 +747,10 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
             if (this.left != null) {
                 if (this.left.isSmall()) {
-                    this.left.setPos(pos.add(direction.getStepZ() * 0.3, -0.4, direction.getStepX() * 0.3));
+                    this.left.setPos(pos.add(direction.getStepZ() * 0.3, -0.4, direction.getStepX() * -0.3));
                     this.left.setYRot(direction.getCounterClockWise().toYRot());
                 } else {
-                    this.left.setPos(pos.add(direction.getStepZ() * 0.1, -1.7, direction.getStepX() * 0.1));
+                    this.left.setPos(pos.add(direction.getStepZ() * 0.1, -1.7, direction.getStepX() * -0.1));
                     this.left.setYRot(direction.getClockWise().toYRot());
                 }
 
@@ -711,8 +760,10 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             }
 
             var packet = new ClientboundTeleportEntityPacket(this.main);
+            var packet2 = new ClientboundTeleportEntityPacket(this.color);
             for (var player : this.watchers) {
                 player.connection.send(packet);
+                player.connection.send(packet2);
 
                 if (right != null) {
                     player.connection.send(right);

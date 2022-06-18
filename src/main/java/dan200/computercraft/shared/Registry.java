@@ -8,6 +8,7 @@ package dan200.computercraft.shared;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.ComputerCraftTags;
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.computer.blocks.BlockComputer;
 import dan200.computercraft.shared.computer.blocks.TileCommandComputer;
 import dan200.computercraft.shared.computer.blocks.TileComputer;
@@ -106,9 +107,9 @@ public final class Registry {
         public static final BlockPrinter PRINTER =
             register("printer", new BlockPrinter(properties()));
         public static final BlockWirelessModem WIRELESS_MODEM_NORMAL =
-            register("wireless_modem_normal", new BlockWirelessModem(properties(), () -> ModBlockEntities.WIRELESS_MODEM_NORMAL));
+            register("wireless_modem_normal", new BlockWirelessModem(properties(), () -> ModBlockEntities.WIRELESS_MODEM_NORMAL, HeadTextures.WIRELESS_MODEM));
         public static final BlockWirelessModem WIRELESS_MODEM_ADVANCED =
-            register("wireless_modem_advanced", new BlockWirelessModem(properties(), () -> ModBlockEntities.WIRELESS_MODEM_ADVANCED));
+            register("wireless_modem_advanced", new BlockWirelessModem(properties(), () -> ModBlockEntities.WIRELESS_MODEM_ADVANCED, HeadTextures.ENDER_MODEM));
         public static final BlockWiredModemFull WIRED_MODEM_FULL =
             register("wired_modem_full", new BlockWiredModemFull(modemProperties()));
         public static final BlockCable CABLE =

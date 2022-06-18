@@ -13,6 +13,8 @@ import dan200.computercraft.shared.peripheral.modem.ModemState;
 import dan200.computercraft.shared.util.TickScheduler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -91,9 +93,25 @@ public class TileWirelessModem extends TileGeneric implements IPeripheralTile
     }
 
     @Override
-    public void blockTick()
-    {
-        if( modem.getModemState().pollChanged() ) updateBlockState();
+    public void blockTick() {
+        if (modem.getModemState().pollChanged()) updateBlockState();
+    }
+
+    public void serverTick() {
+        if (this.level.getGameTime() % 32 == 0 && this.getBlockState().getValue(BlockWirelessModem.ON)) {
+            var dir = this.getDirection();
+            ((ServerLevel) this.level).sendParticles(
+                DustParticleOptions.REDSTONE,
+                this.worldPosition.getX() + 0.5 + dir.getStepX() / 2d,
+                this.worldPosition.getY() + 0.5 + dir.getStepY() / 2d,
+                this.worldPosition.getZ() + 0.5 + dir.getStepZ() / 2d,
+                3,
+                0.2,
+                0.2,
+                0.2,
+                0.02
+            );
+        }
     }
 
     @Nonnull

@@ -104,6 +104,7 @@ public final class ComputerProxy implements ComputerDisplayAccess
 
     @Override
     public boolean canStayOpen(ServerPlayer player) {
-        return this.get.get().getBlockPos().distSqr(player.getOnPos()) <= 64;
+        var x = this.get.get();
+        return x == null || x.isUsable(player);
     }
 }

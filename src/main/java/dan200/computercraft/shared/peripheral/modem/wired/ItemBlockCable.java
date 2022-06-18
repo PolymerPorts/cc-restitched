@@ -14,9 +14,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
@@ -31,9 +29,9 @@ public abstract class ItemBlockCable extends PolymerBlockItem
 {
     private String translationKey;
 
-    public ItemBlockCable( BlockCable block, Properties settings )
+    public ItemBlockCable( BlockCable block, Properties settings, Item polymerItem )
     {
-        super( block, settings, block.getPolymerBlock(block.defaultBlockState()).asItem() );
+        super( block, settings, polymerItem );
     }
 
     boolean placeAt( Level world, BlockPos pos, BlockState state, Player player )
@@ -81,7 +79,7 @@ public abstract class ItemBlockCable extends PolymerBlockItem
     {
         public WiredModem( BlockCable block, Properties settings )
         {
-            super( block, settings );
+            super( block, settings, Items.ANDESITE_WALL );
         }
 
         @Nonnull
@@ -117,7 +115,7 @@ public abstract class ItemBlockCable extends PolymerBlockItem
     {
         public Cable( BlockCable block, Properties settings )
         {
-            super( block, settings );
+            super( block, settings, Items.DIORITE_WALL );
         }
 
         @Nonnull

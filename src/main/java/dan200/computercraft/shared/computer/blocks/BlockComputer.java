@@ -48,12 +48,14 @@ public class BlockComputer<T extends TileComputer> extends BlockComputerBase<T> 
         this.offTexture = switch (family) {
             case ADVANCED -> HeadTextures.ADVANCED_COMPUTER;
             case NORMAL -> HeadTextures.COMPUTER;
+            case COMMAND -> HeadTextures.COMMAND_COMPUTER;
             default -> PolymerUtils.NO_TEXTURE_HEAD_VALUE;
         };
 
         this.onTexture = switch (family) {
             case ADVANCED -> HeadTextures.ADVANCED_COMPUTER_ON;
             case NORMAL -> HeadTextures.COMPUTER_ON;
+            case COMMAND -> HeadTextures.COMMAND_COMPUTER;
             default -> PolymerUtils.NO_TEXTURE_HEAD_VALUE;
         };
     }

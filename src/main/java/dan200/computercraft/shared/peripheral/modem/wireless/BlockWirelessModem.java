@@ -5,6 +5,8 @@
  */
 package dan200.computercraft.shared.peripheral.modem.wireless;
 
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
+import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
 import dan200.computercraft.shared.peripheral.modem.ModemShapes;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
@@ -14,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
@@ -21,6 +24,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -42,14 +47,17 @@ public class BlockWirelessModem extends BlockGeneric implements SimpleWaterlogge
 {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty ON = BooleanProperty.create( "on" );
+    private final HeadTextures.SidedModem texture;
 
-    public BlockWirelessModem( Properties settings, Supplier<BlockEntityType<? extends TileWirelessModem>> type )
+    public BlockWirelessModem(Properties settings, Supplier<BlockEntityType<? extends TileWirelessModem>> type, HeadTextures.SidedModem texture)
     {
         super( settings, type );
         registerDefaultState( getStateDefinition().any()
             .setValue( FACING, Direction.NORTH )
             .setValue( ON, false )
             .setValue( WATERLOGGED, false ) );
+
+        this.texture = texture;
     }
 
     @Override
@@ -90,7 +98,7 @@ public class BlockWirelessModem extends BlockGeneric implements SimpleWaterlogge
     public boolean canSurvive( BlockState state, @Nonnull LevelReader world, BlockPos pos )
     {
         Direction facing = state.getValue( FACING );
-        return canSupportCenter( world, pos.relative( facing ), facing.getOpposite() );
+        return canSupportCenter( world, pos.relative( facing ), facing.getOpposite() ) || world.getBlockState(pos.relative( facing )).getBlock() instanceof BlockGeneric;
     }
 
     @Nullable
@@ -118,9 +126,22 @@ public class BlockWirelessModem extends BlockGeneric implements SimpleWaterlogge
         return state.setValue( FACING, rot.rotate( state.getValue( FACING ) ) );
     }
 
+    private final BlockEntityTicker<TileWirelessModem> serverTicker = ( level, pos, state, computer ) -> computer.serverTick();
+
+    @Override
+    @Nullable
+    public <U extends BlockEntity> BlockEntityTicker<U> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<U> type )
+    {
+        return level.isClientSide ? null : BaseEntityBlock.createTickerHelper( type, (BlockEntityType<TileWirelessModem>) this.getBEType(), serverTicker );
+    }
+
     @Override
     public String getPolymerSkinValue(BlockState state) {
-        return PolymerUtils.NO_TEXTURE_HEAD_VALUE;
+        return switch (state.getValue(FACING)) {
+            case UP -> this.texture.up();
+            case DOWN -> this.texture.down();
+            default -> this.texture.side();
+        };
     }
 
     @Override
@@ -132,7 +153,7 @@ public class BlockWirelessModem extends BlockGeneric implements SimpleWaterlogge
     public BlockState getPolymerBlockState(BlockState state) {
         var dir = state.getValue(FACING);
         return dir.getAxis() != Direction.Axis.Y
-            ? Blocks.PLAYER_WALL_HEAD.defaultBlockState().setValue(WallSkullBlock.FACING, dir)
+            ? Blocks.PLAYER_WALL_HEAD.defaultBlockState().setValue(WallSkullBlock.FACING, dir.getOpposite())
             : Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, dir.getStepY() == 1 ? 0 : 2);
     }
 }

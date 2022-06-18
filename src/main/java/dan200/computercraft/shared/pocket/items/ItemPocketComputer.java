@@ -13,7 +13,7 @@ import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.api.pocket.IPocketUpgrade;
 import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
-import dan200.computercraft.fabric.poly.ComputerGui;
+import dan200.computercraft.fabric.poly.gui.ComputerGui;
 import dan200.computercraft.shared.PocketUpgrades;
 import dan200.computercraft.shared.common.IColouredItem;
 import dan200.computercraft.shared.computer.blocks.TileComputerBase;

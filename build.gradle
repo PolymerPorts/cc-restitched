@@ -1,5 +1,4 @@
 plugins {
-    id "checkstyle"
     id "jacoco"
     id "maven-publish"
     id "com.github.hierynomus.license" version "0.16.1"
@@ -83,8 +82,6 @@ configurations {
 }
 
 dependencies {
-    checkstyle "com.puppycrawl.tools:checkstyle:8.45"
-
     minecraft "com.mojang:minecraft:${mc_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
@@ -137,7 +134,7 @@ dependencies {
 
     modImplementation include("eu.pb4:sgui:1.1.0+1.19")
     modImplementation include("eu.pb4:hologram-api:0.2.2+1.19")
-    modImplementation include("eu.pb4:polymer:0.2.0+1.19")
+    modImplementation include("eu.pb4:polymer:0.2.1+1.19")
     modImplementation include("fr.catcore:server-translations-api:1.4.14+1.19-rc2")
     modImplementation include("eu.pb4:map-canvas-api:0.1.4+1.19")
 }

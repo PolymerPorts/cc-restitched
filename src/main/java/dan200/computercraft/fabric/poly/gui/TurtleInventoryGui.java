@@ -1,5 +1,7 @@
-package dan200.computercraft.fabric.poly;
+package dan200.computercraft.fabric.poly.gui;
 
+import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
+import dan200.computercraft.fabric.poly.gui.ComputerGui;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -27,6 +29,13 @@ public class TurtleInventoryGui extends SimpleGui {
         this.access = turtle.getDisplayAccess();
 
         this.open();
+    }
+
+    @Override
+    public void onTick() {
+        if (!this.access.canStayOpen(player)) {
+            this.close();
+        }
     }
 
     @Override

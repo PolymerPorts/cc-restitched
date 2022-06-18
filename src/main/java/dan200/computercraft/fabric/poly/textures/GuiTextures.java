@@ -18,6 +18,8 @@ public class GuiTextures {
     public static ComputerTexture COMPUTER;
     public static ComputerTexture COMMAND_COMPUTER;
 
+    public static PrintedPageTexture PRINTED_PAGE;
+
     static {
         try {
             var texturePath = FabricLoader.getInstance().getModContainer("computercraft").get().getPath("assets/computercraft/textures/");
@@ -35,6 +37,7 @@ public class GuiTextures {
                 COMPUTER = ComputerTexture.from(CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/corners_normal.png")))));
                 COMMAND_COMPUTER = ComputerTexture.from(CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/corners_command.png")))));
 
+                PRINTED_PAGE = PrintedPageTexture.from(CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/printout.png")))));
             }
 
         } catch (Exception e) {

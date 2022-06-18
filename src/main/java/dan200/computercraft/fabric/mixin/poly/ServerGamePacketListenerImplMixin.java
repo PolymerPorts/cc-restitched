@@ -1,8 +1,7 @@
 package dan200.computercraft.fabric.mixin.poly;
 
-import dan200.computercraft.fabric.poly.MapGui;
+import dan200.computercraft.fabric.poly.gui.MapGui;
 import eu.pb4.sgui.virtual.VirtualScreenHandlerInterface;
-import eu.pb4.sgui.virtual.hotbar.HotbarScreenHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.protocol.Packet;
@@ -93,6 +92,16 @@ public abstract class ServerGamePacketListenerImplMixin {
         if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
                 computerGui.onPlayerInput(serverboundPlayerInputPacket.getXxa(), serverboundPlayerInputPacket.getZza(),  serverboundPlayerInputPacket.isJumping(), serverboundPlayerInputPacket.isShiftKeyDown());
+            });
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "handlePlayerCommand", at = @At("HEAD"), cancellable = true)
+    private void ccp_onVehicleMove(ServerboundPlayerCommandPacket serverboundPlayerCommandPacket, CallbackInfo ci) {
+        if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
+            this.server.execute(() -> {
+                computerGui.onPlayerCommand(serverboundPlayerCommandPacket.getId(), serverboundPlayerCommandPacket.getAction(), serverboundPlayerCommandPacket.getData());
             });
             ci.cancel();
         }

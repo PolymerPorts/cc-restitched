@@ -14,13 +14,16 @@ import dan200.computercraft.api.peripheral.IPeripheralTile;
 import dan200.computercraft.shared.command.text.ChatHelpers;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.peripheral.modem.ModemState;
+import dan200.computercraft.shared.peripheral.modem.wireless.BlockWirelessModem;
 import dan200.computercraft.shared.util.DirectionUtil;
 import dan200.computercraft.shared.util.TickScheduler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -279,6 +282,22 @@ public class TileWiredModemFull extends TileGeneric implements IPeripheralTile
                 }
                 updateConnectedPeripherals();
             }
+        }
+    }
+
+    public void serverTick() {
+        if (this.level.getGameTime() % 32 == 0 && this.getBlockState().getValue(PERIPHERAL_ON)) {
+            ((ServerLevel) this.level).sendParticles(
+                DustParticleOptions.REDSTONE,
+                this.worldPosition.getX() + 0.5,
+                this.worldPosition.getY() + 0.5,
+                this.worldPosition.getZ() + 0.5,
+                3,
+                0.2,
+                0.2,
+                0.2,
+                0.02
+            );
         }
     }
 

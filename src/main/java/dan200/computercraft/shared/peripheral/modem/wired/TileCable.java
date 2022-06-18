@@ -15,12 +15,15 @@ import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.command.text.ChatHelpers;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.peripheral.modem.ModemState;
+import dan200.computercraft.shared.peripheral.modem.wireless.BlockWirelessModem;
 import dan200.computercraft.shared.util.DirectionUtil;
 import dan200.computercraft.shared.util.TickScheduler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -302,6 +305,23 @@ public class TileCable extends TileGeneric implements IPeripheralTile
                 peripheral.attach( level, worldPosition, getDirection() );
                 updateConnectedPeripherals();
             }
+        }
+    }
+
+    public void serverTick() {
+        if (this.level.getGameTime() % 32 == 0 && this.getBlockState().getValue(BlockCable.MODEM).getSerializedName().contains("peripheral")) {
+            var dir = this.getDirection();
+            ((ServerLevel) this.level).sendParticles(
+                DustParticleOptions.REDSTONE,
+                this.worldPosition.getX() + 0.5 + dir.getStepX() / 2d,
+                this.worldPosition.getY() + 0.5 + dir.getStepY() / 2d,
+                this.worldPosition.getZ() + 0.5 + dir.getStepZ() / 2d,
+                3,
+                0.2,
+                0.2,
+                0.2,
+                0.02
+            );
         }
     }
 

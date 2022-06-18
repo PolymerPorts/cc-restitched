@@ -8,6 +8,7 @@ package dan200.computercraft.shared.peripheral.printer;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.IPeripheralTile;
 import dan200.computercraft.core.terminal.Terminal;
+import dan200.computercraft.fabric.poly.gui.PrinterInventoryGui;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.media.items.ItemPrintout;
 import dan200.computercraft.shared.util.ColourUtils;
@@ -18,6 +19,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -80,7 +82,7 @@ public final class TilePrinter extends TileGeneric implements IPeripheralTile, D
     {
         if( player.isCrouching() ) return InteractionResult.PASS;
 
-        if( !getLevel().isClientSide && isUsable( player ) ) player.openMenu( this );
+        if( !getLevel().isClientSide && isUsable( player ) ) new PrinterInventoryGui((ServerPlayer) player, this);
         return InteractionResult.SUCCESS;
     }
 
@@ -297,12 +299,12 @@ public final class TilePrinter extends TileGeneric implements IPeripheralTile, D
         }
     }
 
-    static boolean isInk( @Nonnull ItemStack stack )
+    public static boolean isInk( @Nonnull ItemStack stack )
     {
         return ColourUtils.getStackColour( stack ) != null;
     }
 
-    static boolean isPaper( @Nonnull ItemStack stack )
+    public static boolean isPaper( @Nonnull ItemStack stack )
     {
         Item item = stack.getItem();
         return item == Items.PAPER

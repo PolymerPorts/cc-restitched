@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
+import dan200.computercraft.shared.peripheral.modem.wireless.TileWirelessModem;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
 import dan200.computercraft.shared.util.WorldUtil;
 import eu.pb4.polymer.api.block.PolymerBlock;
@@ -22,6 +23,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -204,7 +207,7 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
         Direction facing = state.getValue( MODEM ).getFacing();
         if( facing == null ) return true;
 
-        return canSupportCenter( world, pos.relative( facing ), facing.getOpposite() );
+        return canSupportCenter( world, pos.relative( facing ), facing.getOpposite() ) || world.getBlockState(pos.relative( facing )).getBlock() instanceof BlockGeneric;
     }
 
     @Nullable
@@ -246,6 +249,15 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
         }
     }
 
+    private final BlockEntityTicker<TileCable> serverTicker = (level, pos, state, computer ) -> computer.serverTick();
+
+    @Override
+    @Nullable
+    public <U extends BlockEntity> BlockEntityTicker<U> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<U> type )
+    {
+        return level.isClientSide ? null : BaseEntityBlock.createTickerHelper( type, Registry.ModBlockEntities.CABLE, serverTicker );
+    }
+
     @Override
     public Block getPolymerBlock(BlockState state) {
         return Blocks.ANDESITE_WALL;
@@ -253,33 +265,38 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
 
     @Override
     public BlockState getPolymerBlockState(BlockState state) {
-        var east = state.getValue(EAST);
-        var west = state.getValue(WEST);
-        var north = state.getValue(NORTH);
-        var south = state.getValue(SOUTH);
-        var up = state.getValue(UP);
-        var down = state.getValue(DOWN);
+        var modem = state.getValue(BlockCable.MODEM);
+
+        var hasModem = modem.getFacing() != null;
+
+        var east = state.getValue(EAST) || modem.getFacing() == Direction.EAST;
+        var west = state.getValue(WEST) || modem.getFacing() == Direction.WEST;
+        var north = state.getValue(NORTH) || modem.getFacing() == Direction.NORTH;
+        var south = state.getValue(SOUTH) || modem.getFacing() == Direction.SOUTH;
+        var up = state.getValue(UP) || modem.getFacing() == Direction.UP;
+        var down = state.getValue(DOWN) || modem.getFacing() == Direction.DOWN;
 
         if (!(east || north || west || south || up || down)) {
-            return Blocks.ANDESITE_SLAB.defaultBlockState();
+            return (hasModem ? Blocks.ANDESITE_SLAB : Blocks.DIORITE_SLAB).defaultBlockState();
         }
 
         if (up || down) {
+            var stair = (hasModem ? Blocks.ANDESITE_STAIRS : Blocks.DIORITE_STAIRS);
             if (east && !(west || north || south)) {
-                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST).setValue(StairBlock.HALF,  up ? Half.TOP : Half.BOTTOM);
+                return stair.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST).setValue(StairBlock.HALF,  up ? Half.TOP : Half.BOTTOM);
             } else if (west && !(east || north || south)) {
-                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
+                return stair.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
             } else if (north && !(east || west|| south)) {
-                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
+                return stair.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
             } else if (south && !(east || north || west)) {
-                return Blocks.ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
+                return stair.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH).setValue(StairBlock.HALF, up ? Half.TOP : Half.BOTTOM);
             }
         }
 
         boolean forceUp = (east && !(west || north || south)) || (west && !(east || north || south)) || (north && !(east || west|| south)) || (south && !(east || north || west));
 
 
-        return Blocks.ANDESITE_WALL.defaultBlockState()
+        return (hasModem ? Blocks.ANDESITE_WALL : Blocks.DIORITE_WALL).defaultBlockState()
             .setValue(WallBlock.UP, up || down || ((east || west) && (north || south)) || forceUp)
             .setValue(WallBlock.EAST_WALL, east ? WallSide.TALL : WallSide.NONE)
             .setValue(WallBlock.WEST_WALL, west ? WallSide.TALL : WallSide.NONE)

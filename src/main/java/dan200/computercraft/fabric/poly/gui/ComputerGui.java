@@ -1,6 +1,8 @@
-package dan200.computercraft.fabric.poly;
+package dan200.computercraft.fabric.poly.gui;
 
 import com.mojang.authlib.GameProfile;
+import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
+import dan200.computercraft.fabric.poly.Keys;
 import dan200.computercraft.fabric.poly.render.*;
 import dan200.computercraft.fabric.poly.textures.GuiTextures;
 import dan200.computercraft.fabric.poly.textures.RepeatingCanvas;
@@ -49,6 +51,7 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
         }
         ACTIONS.put("enter", pressKey(Keys.ENTER));
         ACTIONS.put("backspace", pressKey(Keys.BACKSPACE));
+        ACTIONS.put("bsp", pressKey(Keys.BACKSPACE));
         ACTIONS.put("back", pressKey(Keys.BACKSPACE));
         ACTIONS.put("esc", pressKey(Keys.ESCAPE));
         ACTIONS.put("ctrl", pressKey(Keys.LEFT_CONTROL));
@@ -397,25 +400,6 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
         }
     }
 
-    public void onCameraMove(float xRot, float yRot) {
-        this.mouseMoves++;
-
-        if (this.mouseMoves < 16) {
-            return;
-        }
-
-        this.xRot = xRot;
-        this.yRot = yRot;
-
-        this.cursorX = this.cursorX + (int) ((xRot > 0.3 ? 3 : xRot < -0.3 ? -3 : 0) * (Math.abs(xRot) - 0.3));
-        this.cursorY = this.cursorY + (int) ((yRot > 0.3 ? 3 : yRot < -0.3 ? -3 : 0) * (Math.abs(yRot) - 0.3));
-
-        this.cursorX = Mth.clamp(this.cursorX, 5, this.canvas.getWidth() * 2 - 5);
-        this.cursorY = Mth.clamp(this.cursorY, 5, this.canvas.getHeight() * 2 - 5);
-
-        this.cursor.move(this.cursorX + 4, this.cursorY + 4, this.cursor.getRotation());
-    }
-
     @Override
     public boolean onClickEntity(int entityId, EntityInteraction type, boolean isSneaking, @Nullable Vec3 interactionPos) {
         //this.player.sendMessage(new TextComponent("x: " + this.cursorX / 2 + " | y: " + this.cursorY / 2), Util.NIL_UUID);
@@ -428,10 +412,6 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
         return super.onClickEntity(entityId, type, isSneaking, interactionPos);
     }
 
-    public void setDistance(double i) {
-        this.entity.setPos(this.entity.getX(), this.entity.getY(), this.pos.getZ() - 0.8 - i);
-        this.player.connection.send(new ClientboundTeleportEntityPacket(this.entity));
-    }
 
     @Nullable
     @Override

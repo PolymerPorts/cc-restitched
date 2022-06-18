@@ -5,6 +5,7 @@
  */
 package dan200.computercraft.shared.peripheral.printer;
 
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
 import eu.pb4.polymer.api.block.PolymerHeadBlock;
@@ -111,11 +112,11 @@ public class BlockPrinter extends BlockGeneric implements PolymerHeadBlock
 
     @Override
     public BlockState getPolymerBlockState(BlockState state) {
-        return Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, state.getValue(FACING).get2DDataValue() * 4);
+        return Blocks.PLAYER_HEAD.defaultBlockState().setValue(SkullBlock.ROTATION, state.getValue(FACING).getOpposite().get2DDataValue() * 4);
     }
 
     @Override
     public String getPolymerSkinValue(BlockState state) {
-        return PolymerUtils.NO_TEXTURE_HEAD_VALUE;
+        return HeadTextures.PRINTER;
     }
 }

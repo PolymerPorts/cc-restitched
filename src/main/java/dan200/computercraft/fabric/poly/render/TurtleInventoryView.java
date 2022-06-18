@@ -1,19 +1,14 @@
 package dan200.computercraft.fabric.poly.render;
 
-import dan200.computercraft.fabric.poly.ComputerGui;
-import dan200.computercraft.fabric.poly.TurtleInventoryGui;
+import dan200.computercraft.fabric.poly.gui.ComputerGui;
+import dan200.computercraft.fabric.poly.gui.TurtleInventoryGui;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import eu.pb4.polymer.impl.other.FakeWorld;
 import fr.catcore.server.translations.api.LocalizationTarget;
 import fr.catcore.server.translations.api.text.LocalizableText;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.projectile.Snowball;
-import net.minecraft.world.phys.Vec3;
 
 public class TurtleInventoryView extends ScreenElement {
     private final ComputerGui gui;

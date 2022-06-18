@@ -1,4 +1,4 @@
-package dan200.computercraft.fabric.poly;
+package dan200.computercraft.fabric.poly.gui;
 
 import com.google.common.base.Predicates;
 import com.mojang.authlib.GameProfile;
@@ -207,6 +207,9 @@ public class MapGui extends HotbarGui {
 
     }
 
+    public void onPlayerCommand(int id, ServerboundPlayerCommandPacket.Action action, int data) {
+    }
+
     static {
         var commandNode = new RootCommandNode<SharedSuggestionProvider>();
 
@@ -225,4 +228,6 @@ public class MapGui extends HotbarGui {
 
         COMMAND_PACKET = new ClientboundCommandsPacket(commandNode);
     }
+
+
 }

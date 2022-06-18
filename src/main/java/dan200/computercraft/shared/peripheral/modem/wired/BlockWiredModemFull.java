@@ -5,16 +5,25 @@
  */
 package dan200.computercraft.shared.peripheral.modem.wired;
 
+import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
 import eu.pb4.polymer.api.block.PolymerHeadBlock;
 import eu.pb4.polymer.api.utils.PolymerUtils;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SkullBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class BlockWiredModemFull extends BlockGeneric implements PolymerHeadBlock
 {
@@ -36,6 +45,15 @@ public class BlockWiredModemFull extends BlockGeneric implements PolymerHeadBloc
         builder.add( MODEM_ON, PERIPHERAL_ON );
     }
 
+    private final BlockEntityTicker<TileWiredModemFull> serverTicker = (level, pos, state, computer ) -> computer.serverTick();
+
+    @Override
+    @Nullable
+    public <U extends BlockEntity> BlockEntityTicker<U> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<U> type )
+    {
+        return level.isClientSide ? null : BaseEntityBlock.createTickerHelper( type, Registry.ModBlockEntities.WIRED_MODEM_FULL, serverTicker );
+    }
+
     @Override
     public Block getPolymerBlock(BlockState state) {
         return Blocks.PLAYER_HEAD;
@@ -43,6 +61,6 @@ public class BlockWiredModemFull extends BlockGeneric implements PolymerHeadBloc
 
     @Override
     public String getPolymerSkinValue(BlockState state) {
-        return PolymerUtils.NO_TEXTURE_HEAD_VALUE;
+        return HeadTextures.WIRED_MODEM;
     }
 }
