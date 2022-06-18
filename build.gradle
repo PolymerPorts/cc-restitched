@@ -117,10 +117,11 @@ dependencies {
     //modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-fabric:6.0.254-alpha"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    modCompileOnly "maven.modrinth:iris:1.18.x-v1.2.5"
+    //modCompileOnly "maven.modrinth:iris:1.19.x-v1.2.5"
 
     // For running with Iris. Can be ignored most of the time.
-    // modRuntimeOnly "maven.modrinth:sodium:mc1.18.2-0.4.1"
+    // modRuntimeOnly "maven.modrinth:iris:1.19.x-v1.2.5"
+    // modRuntimeOnly "maven.modrinth:sodium:mc1.19-0.4.2"
     // runtimeOnly "org.joml:joml:1.10.2"
     // runtimeOnly "org.anarres:jcpp:1.4.14"
 
@@ -128,20 +129,17 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21'
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1'
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
     testImplementation 'org.jetbrains.kotlin:kotlin-reflect:1.6.0'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
 
-    cctJavadoc 'cc.tweaked:cct-javadoc:1.4.2'
+    cctJavadoc 'cc.tweaked:cct-javadoc:1.4.5'
 
     modImplementation include("eu.pb4:sgui:1.1.0+1.19")
     modImplementation include("eu.pb4:hologram-api:0.2.2+1.19")
     modImplementation include("eu.pb4:polymer:0.2.0+1.19")
     modImplementation include("fr.catcore:server-translations-api:1.4.14+1.19-rc2")
     modImplementation include("eu.pb4:map-canvas-api:0.1.4+1.19")
-    cctJavadoc 'cc.tweaked:cct-javadoc:1.4.5'
 }
 
 processResources {
