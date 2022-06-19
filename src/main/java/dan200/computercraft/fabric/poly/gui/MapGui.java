@@ -82,6 +82,7 @@ public class MapGui extends HotbarGui {
         this.virtualDisplay = VirtualDisplay.of(this.canvas, pos.relative(dir).relative(dir.getClockWise(), 2).above(), dir, 0, true);
         this.virtualDisplay2 = null;//VirtualDisplay.of(this.canvas, pos.relative(dir.getClockWise(), 2).above(), dir, 0, true);
         this.renderer = CanvasRenderer.of(new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight()));
+        this.renderer.add(new ImageButton(560, 32, GuiTextures.CLOSE_ICON, (a, b, c) -> this.close()));
 
         this.canvas.addPlayer(player);
         this.virtualDisplay.addPlayer(player);

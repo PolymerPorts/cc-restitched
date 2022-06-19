@@ -7,12 +7,10 @@ import javax.imageio.ImageIO;
 import java.nio.file.Files;
 
 public class GuiTextures {
-    public static CanvasImage CLOSE_ICON;
-    public static CanvasImage CLOSE_ICON_HOVER;
-    public static CanvasImage CLOSE_ICON_ACTIVE;
-    public static CanvasImage CLOSE_ICON_ACTIVE_HOVER;
-    public static CanvasImage TERMINATE;
-    public static CanvasImage TERMINATE_HOVER;
+    public static ButtonTexture CLOSE_ICON;
+    public static ButtonTexture SHUTDOWN_ICON;
+    public static ButtonTexture SHUTDOWN_ACTIVE;
+    public static ButtonTexture TERMINATE;
 
     public static ComputerTexture ADVANCED_COMPUTER;
     public static ComputerTexture COMPUTER;
@@ -26,12 +24,12 @@ public class GuiTextures {
             {
                 var buttons = CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/buttons.png"))));
 
-                CLOSE_ICON = buttons.copy(0, 0, 14, 14);
-                CLOSE_ICON_HOVER = buttons.copy(0, 14, 14, 14);
-                CLOSE_ICON_ACTIVE = buttons.copy(14, 0, 14, 14);
-                CLOSE_ICON_ACTIVE_HOVER = buttons.copy(14, 14, 14, 14);
-                TERMINATE = buttons.copy(28, 0, 14, 14);
-                TERMINATE_HOVER = buttons.copy(28, 14, 14, 14);
+                SHUTDOWN_ICON = new ButtonTexture(buttons.copy(0, 0, 14, 14), buttons.copy(0, 14, 14, 14));
+                SHUTDOWN_ACTIVE = new ButtonTexture(buttons.copy(14, 0, 14, 14), buttons.copy(14, 14, 14, 14));
+                TERMINATE = new ButtonTexture(buttons.copy(28, 0, 14, 14), buttons.copy(28, 14, 14, 14));
+
+                var buttons2 = CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/poly_buttons.png"))));
+                CLOSE_ICON = new ButtonTexture(buttons2.copy(0, 0, 14, 14), buttons2.copy(0, 14, 14, 14));
 
                 ADVANCED_COMPUTER = ComputerTexture.from(CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/corners_advanced.png")))));
                 COMPUTER = ComputerTexture.from(CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/corners_normal.png")))));
@@ -39,6 +37,7 @@ public class GuiTextures {
 
                 PRINTED_PAGE = PrintedPageTexture.from(CanvasImage.from(ImageIO.read(Files.newInputStream(texturePath.resolve("gui/printout.png")))));
             }
+
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -21,6 +21,15 @@ excluding different guis and no support for DFPWM/playing dynamic audio from spe
 ![Turtles](https://imgur.com/HQ8hbP9.png)
 ![Turtle ui](https://imgur.com/1WMDkjJ.png)
 
+## How to use uis
+To move mouse pointer you just need to move same way as you would rotate camera.
+
+To input text directly into PC, type `/` and follow it by your input
+
+To run macros/shortcuts, send a message starting with `;` (press tab to list all available). 
+You can input multiple by separating them with `;`. Some of them take arguments after space (mostly number of reapeats)
+
+To exit guis press Ctrl + Q.
 
 ## Downloads:
 - Github Releases: https://github.com/PolymerPorts/cc-restitched/releases

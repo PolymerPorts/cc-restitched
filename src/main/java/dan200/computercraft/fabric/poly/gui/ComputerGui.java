@@ -20,10 +20,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
-import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -178,7 +176,7 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
                 int size = 0;
 
                 {
-                    this.closeButton = new ImageButton(sideX, sideY + size, GuiTextures.CLOSE_ICON, (x, y, t) -> {
+                    this.closeButton = new ImageButton(sideX, sideY + size, GuiTextures.SHUTDOWN_ICON, (x, y, t) -> {
                         if (this.getComputer().isOn()) {
                             this.getComputer().shutdown();
                         } else {
@@ -295,18 +293,10 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
     }
 
     public void render() {
-
-        {
-            boolean isIn = this.closeButton.isIn(this.cursorX / 2, this.cursorY / 2);
-            if (this.computer.getComputer().isOn()) {
-                this.closeButton.image = isIn ? GuiTextures.CLOSE_ICON_ACTIVE_HOVER : GuiTextures.CLOSE_ICON_ACTIVE;
-            } else {
-                this.closeButton.image = isIn ? GuiTextures.CLOSE_ICON_HOVER : GuiTextures.CLOSE_ICON;
-            }
-        }
-        {
-            boolean isIn = this.terminateButton.isIn(this.cursorX / 2, this.cursorY / 2);
-            this.terminateButton.image = isIn ? GuiTextures.TERMINATE_HOVER : GuiTextures.TERMINATE;
+        if (this.computer.getComputer().isOn()) {
+            this.closeButton.texture = GuiTextures.SHUTDOWN_ACTIVE;
+        } else {
+            this.closeButton.texture = GuiTextures.SHUTDOWN_ICON;
         }
 
         super.render();
@@ -402,13 +392,6 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
 
     @Override
     public boolean onClickEntity(int entityId, EntityInteraction type, boolean isSneaking, @Nullable Vec3 interactionPos) {
-        //this.player.sendMessage(new TextComponent("x: " + this.cursorX / 2 + " | y: " + this.cursorY / 2), Util.NIL_UUID);
-        if (type == EntityInteraction.ATTACK) {
-            this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.LEFT_DOWN);
-        } else {
-            this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.RIGHT_DOWN);
-        }
-
         return super.onClickEntity(entityId, type, isSneaking, interactionPos);
     }
 
