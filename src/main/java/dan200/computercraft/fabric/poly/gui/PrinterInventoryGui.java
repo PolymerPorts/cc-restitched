@@ -1,11 +1,15 @@
 package dan200.computercraft.fabric.poly.gui;
 
+import dan200.computercraft.fabric.poly.PolymerSetup;
 import dan200.computercraft.shared.peripheral.printer.TilePrinter;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import dan200.computercraft.shared.util.ValidatingSlot;
+import eu.pb4.polymer.api.resourcepack.PolymerRPUtils;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
@@ -16,8 +20,11 @@ public class PrinterInventoryGui extends SimpleGui {
     public PrinterInventoryGui(ServerPlayer player, TilePrinter printer) {
         super(MenuType.GENERIC_9x3, player, false);
 
-        var empty = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Component.empty());
-        this.setTitle(printer.getDisplayName());
+        var pack = PolymerRPUtils.hasPack(player);
+        this.setTitle(pack
+            ? Component.empty().append(Component.literal("-0.").setStyle(Style.EMPTY.withFont(PolymerSetup.GUI_FONT).withColor(ChatFormatting.WHITE))).append(printer.getDisplayName())
+            : printer.getDisplayName()
+        );
         this.setSlotRedirect(10, new ValidatingSlot(printer, 0, 0, 0, TilePrinter::isInk));
 
         for (var i = 0; i < 6; i++) {
@@ -25,8 +32,10 @@ public class PrinterInventoryGui extends SimpleGui {
             this.setSlotRedirect(i + 3 + 18, new ValidatingSlot(printer, i + 7, 0, 0, (x) -> false));
         }
 
-        while (this.getFirstEmptySlot() != -1) {
-            this.addSlot(empty);
+        if (!pack) {
+            while (this.getFirstEmptySlot() != -1) {
+                this.addSlot(PolymerSetup.FILLER_ITEM);
+            }
         }
 
         this.printer = printer;

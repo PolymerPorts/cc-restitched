@@ -5,6 +5,7 @@
  */
 package dan200.computercraft.shared.media.items;
 
+import dan200.computercraft.fabric.poly.PolymerAutoTexturedItem;
 import dan200.computercraft.fabric.poly.gui.PrintedPageGui;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.ContainerHeldItem;
@@ -26,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class ItemPrintout extends Item implements PolymerItem
+public class ItemPrintout extends Item implements PolymerAutoTexturedItem
 {
     private static final String NBT_TITLE = "Title";
     private static final String NBT_PAGES = "Pages";

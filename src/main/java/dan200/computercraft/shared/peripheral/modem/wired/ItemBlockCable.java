@@ -5,6 +5,7 @@
  */
 package dan200.computercraft.shared.peripheral.modem.wired;
 
+import dan200.computercraft.fabric.poly.textures.PolymerAutoTexturedBlockItem;
 import dan200.computercraft.shared.Registry;
 import eu.pb4.polymer.api.item.PolymerBlockItem;
 import net.minecraft.Util;
@@ -25,7 +26,7 @@ import javax.annotation.Nonnull;
 
 import static dan200.computercraft.shared.peripheral.modem.wired.BlockCable.*;
 
-public abstract class ItemBlockCable extends PolymerBlockItem
+public abstract class ItemBlockCable extends PolymerAutoTexturedBlockItem
 {
     private String translationKey;
 
@@ -79,7 +80,7 @@ public abstract class ItemBlockCable extends PolymerBlockItem
     {
         public WiredModem( BlockCable block, Properties settings )
         {
-            super( block, settings, Items.ANDESITE_WALL );
+            super( block, settings, Items.DEEPSLATE_TILE_WALL );
         }
 
         @Nonnull
@@ -115,7 +116,7 @@ public abstract class ItemBlockCable extends PolymerBlockItem
     {
         public Cable( BlockCable block, Properties settings )
         {
-            super( block, settings, Items.DIORITE_WALL );
+            super( block, settings, Items.ANDESITE_WALL );
         }
 
         @Nonnull

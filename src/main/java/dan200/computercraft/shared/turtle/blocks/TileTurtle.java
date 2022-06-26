@@ -653,7 +653,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             for (var player : new ArrayList<>(this.watchers)) {
                 if (player.isRemoved()) {
                     this.watchers.remove(player);
-                } else if (active && player.getEyePosition().distanceToSqr(this.main.getEyePosition()) > 32*32) {
+                } else if (active && player.getEyePosition().distanceToSqr(this.main.getEyePosition()) > 48*48) {
                     player.connection.send(new ClientboundRemoveEntitiesPacket(this.main.getId(), this.color.getId()));
                     if (this.right != null) {
                         player.connection.send(new ClientboundRemoveEntitiesPacket(this.right.getId()));
@@ -666,7 +666,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             }
 
             if (active) {
-                for (var player : ((ServerLevel) this.proxy.getBlockEntity().getLevel()).getPlayers((player) -> player.getEyePosition().distanceToSqr(this.main.getEyePosition()) < 32*32)) {
+                for (var player : ((ServerLevel) this.proxy.getBlockEntity().getLevel()).getPlayers((player) -> player.getEyePosition().distanceToSqr(this.main.getEyePosition()) < 48*48)) {
                     if (this.watchers.add(player)) {
                         player.connection.send(this.main.getAddEntityPacket());
                         player.connection.send(new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData(), true));

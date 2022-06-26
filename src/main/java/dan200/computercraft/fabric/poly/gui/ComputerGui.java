@@ -60,7 +60,39 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
         ACTIONS.put("down", pressKey(Keys.DOWN));
         ACTIONS.put("left", pressKey(Keys.LEFT));
         ACTIONS.put("right", pressKey(Keys.RIGHT));
+
         ACTIONS.put("close", (gui, arg) -> gui.close());
+        ACTIONS.put("exit", (gui, arg) -> gui.close());
+        ACTIONS.put("quit", (gui, arg) -> gui.close());
+
+        ACTIONS.put("press", (gui, arg) -> {
+            if (arg != null && !arg.isEmpty()) {
+                char character = arg.charAt(0);
+
+                var args = arg.length() == 1 ? new String[]{ arg } : arg.split(" ", 2);
+
+                try {
+                    if (args[0].length() > 1) {
+                        character = (char) Integer.parseInt(arg);
+                    }
+                } catch (Throwable e) {
+
+                }
+
+                int count = 1;
+
+                try {
+                    count = Math.min(Integer.parseInt(args[1]), 255);
+                } catch (Throwable t) {
+
+                }
+
+                for (int i = 0; i < count; i++) {
+                    gui.pressButton(character);
+                }
+            }
+        });
+
         ACTIONS.put("moveview", (gui, arg) -> {
             try {
                 double i = Math.min(Math.max(Double.parseDouble(arg), 1), 8);
@@ -379,14 +411,39 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
             }
 
             for (var tmp = i; tmp < old.length(); tmp++) {
-                this.input.queueEvent("key", new Object[]{Keys.BACKSPACE, false});
+                if (!this.keysToReleaseNextTick.contains(Keys.BACKSPACE) && !this.input.isKeyDown(Keys.BACKSPACE)) {
+                    this.input.keyDown(Keys.BACKSPACE, false);
+                    this.keysToReleaseNextTick.add(Keys.BACKSPACE);
+                } else {
+                    this.input.queueEvent("key", new Object[]{Keys.BACKSPACE, false});
+                }
             }
 
             for (; i < command.length(); i++) {
-                this.input.queueEvent("char", new Object[]{Character.toString(command.charAt(i))});
+                pressButton(command.charAt(i));
             }
 
             this.currentInput = command;
+        }
+    }
+
+    public void pressButton(char character) {
+        if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
+            var key = KeyboardView.CHAR_TO_KEY.get(character);
+            if (key != null) {
+                this.input.keyDown(key.key(), false);
+                this.keysToReleaseNextTick.add(key.key());
+            }
+
+            if (key.upperCase() == character && key.lowerCase() != character) {
+                if (!this.keysToReleaseNextTick.contains(Keys.LEFT_SHIFT) && !this.input.isKeyDown(Keys.LEFT_SHIFT)) {
+                    this.input.keyDown(Keys.LEFT_SHIFT, false);
+
+                    this.keysToReleaseNextTick.add(Keys.LEFT_SHIFT);
+                }
+            }
+
+            this.input.queueEvent("char", new Object[]{Character.toString(character)});
         }
     }
 

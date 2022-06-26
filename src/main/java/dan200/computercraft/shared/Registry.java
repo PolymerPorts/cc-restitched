@@ -8,7 +8,10 @@ package dan200.computercraft.shared;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.ComputerCraftTags;
+import dan200.computercraft.fabric.poly.PolymerAutoTexturedItem;
+import dan200.computercraft.fabric.poly.PolymerSetup;
 import dan200.computercraft.fabric.poly.textures.HeadTextures;
+import dan200.computercraft.fabric.poly.textures.PolymerAutoTexturedBlockItem;
 import dan200.computercraft.shared.computer.blocks.BlockComputer;
 import dan200.computercraft.shared.computer.blocks.TileCommandComputer;
 import dan200.computercraft.shared.computer.blocks.TileComputer;
@@ -61,6 +64,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 
+import java.util.Collection;
 import java.util.function.BiFunction;
 
 import static net.minecraft.core.Registry.BLOCK_ENTITY_TYPE;
@@ -237,10 +241,10 @@ public final class Registry {
             ofBlock(ModBlocks.PRINTER, PolymerHeadBlockItem::new);
 
         public static final BlockItem MONITOR_NORMAL =
-            ofBlock(ModBlocks.MONITOR_NORMAL, (block, properties) -> new PolymerBlockItem(block, properties, block.getPolymerBlock(block.defaultBlockState()).asItem()));
+            ofBlock(ModBlocks.MONITOR_NORMAL, (block, properties) -> new PolymerAutoTexturedBlockItem(block, properties, block.getPolymerBlock(block.defaultBlockState()).asItem()));
 
         public static final BlockItem MONITOR_ADVANCED =
-            ofBlock(ModBlocks.MONITOR_ADVANCED, (block, properties) -> new PolymerBlockItem(block, properties, block.getPolymerBlock(block.defaultBlockState()).asItem()));
+            ofBlock(ModBlocks.MONITOR_ADVANCED, (block, properties) -> new PolymerAutoTexturedBlockItem(block, properties, block.getPolymerBlock(block.defaultBlockState()).asItem()));
 
         public static final BlockItem WIRELESS_MODEM_NORMAL =
             ofBlock(ModBlocks.WIRELESS_MODEM_NORMAL, PolymerHeadBlockItem::new);
@@ -259,7 +263,7 @@ public final class Registry {
 
 
         private static <B extends Block, I extends Item> I ofBlock(B parent, BiFunction<B, Item.Properties, I> supplier) {
-            return net.minecraft.core.Registry.register(net.minecraft.core.Registry.ITEM, net.minecraft.core.Registry.BLOCK.getKey(parent), supplier.apply(parent, properties()));
+            return register(net.minecraft.core.Registry.BLOCK.getKey(parent).getPath(), supplier.apply(parent, properties()));
         }
 
         private static Item.Properties properties() {
@@ -267,6 +271,9 @@ public final class Registry {
         }
 
         private static <T extends Item> T register(String id, T item) {
+            if (item instanceof PolymerAutoTexturedItem) {
+                PolymerSetup.requestModel(new ResourceLocation(MOD_ID, "item/" + id), item);
+            }
             return net.minecraft.core.Registry.register(net.minecraft.core.Registry.ITEM, new ResourceLocation(MOD_ID, id), item);
         }
     }

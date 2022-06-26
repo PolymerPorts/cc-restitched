@@ -1,0 +1,29 @@
+{
+    "providers": [
+        {
+            "type": "space",
+            "advances": {
+                ".": -170,
+                "-": -8
+            }
+        },
+        {
+            "type": "bitmap",
+            "file": "computercraft:gui/printer.png",
+            "ascent": 13,
+            "height": 256,
+            "chars": [
+                "0"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "computercraft:gui/turtle_inventory.png",
+            "ascent": 13,
+            "height": 256,
+            "chars": [
+                "1"
+            ]
+        }
+    ]
+}

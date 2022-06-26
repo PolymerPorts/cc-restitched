@@ -14,10 +14,7 @@ import dan200.computercraft.shared.computer.core.InputState;
 import dan200.computercraft.shared.computer.upload.FileSlice;
 import dan200.computercraft.shared.computer.upload.FileUpload;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
-import eu.pb4.mapcanvas.api.core.CanvasIcon;
-import eu.pb4.mapcanvas.api.core.CanvasImage;
-import eu.pb4.mapcanvas.api.core.CombinedPlayerCanvas;
-import eu.pb4.mapcanvas.api.core.DrawableCanvas;
+import eu.pb4.mapcanvas.api.core.*;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
 import eu.pb4.polymer.impl.other.FakeWorld;
@@ -27,6 +24,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
@@ -60,7 +58,6 @@ public class MapGui extends HotbarGui {
     public final Entity entity;
     public final CombinedPlayerCanvas canvas;
     public final VirtualDisplay virtualDisplay;
-    public final VirtualDisplay virtualDisplay2;
     public final CanvasRenderer renderer;
     public final BlockPos pos;
     public final CanvasIcon cursor;
@@ -80,13 +77,11 @@ public class MapGui extends HotbarGui {
         var dir = Direction.NORTH;
         this.canvas = DrawableCanvas.create(5, 3);
         this.virtualDisplay = VirtualDisplay.of(this.canvas, pos.relative(dir).relative(dir.getClockWise(), 2).above(), dir, 0, true);
-        this.virtualDisplay2 = null;//VirtualDisplay.of(this.canvas, pos.relative(dir.getClockWise(), 2).above(), dir, 0, true);
         this.renderer = CanvasRenderer.of(new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight()));
         this.renderer.add(new ImageButton(560, 32, GuiTextures.CLOSE_ICON, (a, b, c) -> this.close()));
 
         this.canvas.addPlayer(player);
         this.virtualDisplay.addPlayer(player);
-        //this.virtualDisplay2.addPlayer(player);
 
         this.entity = new Horse(EntityType.HORSE, FakeWorld.INSTANCE);
         this.entity.setPos(pos.getX() + 0.5, pos.getY() - 1, pos.getZ() - 1.8);
@@ -121,6 +116,16 @@ public class MapGui extends HotbarGui {
 
     public void render() {
         this.renderer.render(this.player.level.getGameTime(), this.cursorX / 2, this.cursorY / 2);
+        // Debug maps
+        if (false && FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            for (int x = 0; x < this.canvas.getSectionsWidth(); x++) {
+                CanvasUtils.fill(this.renderer.canvas(), x * 128, 0, x * 128 + 1, this.canvas.getHeight(), CanvasColor.RED_HIGH);
+            }
+            for (int x = 0; x < this.canvas.getSectionsHeight(); x++) {
+                CanvasUtils.fill(this.renderer.canvas(), 0,x * 128, this.canvas.getWidth(), x * 128 + 1, CanvasColor.BLUE_HIGH);
+            }
+        }
+
         CanvasUtils.draw(this.canvas, 0, 0, this.renderer.canvas());
         this.canvas.sendUpdates();
     }

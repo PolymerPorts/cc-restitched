@@ -13,6 +13,7 @@ import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.api.pocket.IPocketUpgrade;
 import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
+import dan200.computercraft.fabric.poly.PolymerAutoTexturedItem;
 import dan200.computercraft.fabric.poly.gui.ComputerGui;
 import dan200.computercraft.shared.PocketUpgrades;
 import dan200.computercraft.shared.common.IColouredItem;
@@ -43,7 +44,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemPocketComputer extends Item implements IComputerItem, IMedia, IColouredItem, PolymerItem
+public class ItemPocketComputer extends Item implements IComputerItem, IMedia, IColouredItem, PolymerAutoTexturedItem
 {
     private static final String NBT_UPGRADE = "Upgrade";
     private static final String NBT_UPGRADE_INFO = "UpgradeInfo";

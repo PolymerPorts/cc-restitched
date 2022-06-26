@@ -8,6 +8,7 @@ package dan200.computercraft;
 import dan200.computercraft.core.apis.http.options.Action;
 import dan200.computercraft.core.apis.http.options.AddressRule;
 import dan200.computercraft.fabric.poly.Fonts;
+import dan200.computercraft.fabric.poly.PolymerSetup;
 import dan200.computercraft.fabric.poly.textures.GuiTextures;
 import dan200.computercraft.shared.Registry.ModBlocks;
 import dan200.computercraft.shared.common.ColourableRecipe;
@@ -118,7 +119,6 @@ public final class ComputerCraft
         Registry.register( Registry.LOOT_CONDITION_TYPE, new ResourceLocation( ComputerCraft.MOD_ID, "player_creative" ), PlayerCreativeLootCondition.TYPE );
         Registry.register( Registry.LOOT_CONDITION_TYPE, new ResourceLocation( ComputerCraft.MOD_ID, "has_id" ), HasComputerIdLootCondition.TYPE );
         init();
-        Fonts.TERMINAL_FONT.hashCode();
-        GuiTextures.ADVANCED_COMPUTER.hashCode();
+        PolymerSetup.setup();
     }
 }

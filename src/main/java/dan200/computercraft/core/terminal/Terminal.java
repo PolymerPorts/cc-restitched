@@ -379,11 +379,7 @@ public class Terminal {
                 var color = this.getTextColourLine(y);
                 for (int x = 0; x < this.width; x++) {
                     CanvasUtils.fill(this.canvasImage, x * Fonts.FONT_WIDTH, y * Fonts.FONT_HEIGHT, x * Fonts.FONT_WIDTH + Fonts.FONT_WIDTH, y * Fonts.FONT_HEIGHT + Fonts.FONT_HEIGHT, Colour.fromInt(15 - getColour(bgColor.charAt(x), Colour.BLACK)).canvasColor);
-                    var character = line.charAt(x);
-
-                    int charWidth = Fonts.TERMINAL_FONT.getGlyphWidth(character, 8, 0);
-
-                    Fonts.TERMINAL_FONT.drawGlyph(this.canvasImage, line.charAt(x), x * Fonts.FONT_WIDTH + (Fonts.FONT_WIDTH - charWidth) / 2, y * Fonts.FONT_HEIGHT, 8, 0,
+                    Fonts.TERMINAL_FONT.drawGlyph(this.canvasImage, line.charAt(x), x * (Fonts.FONT_WIDTH), y * (Fonts.FONT_HEIGHT), 8, 0,
                         Colour.fromInt(15 - Terminal.getColour(color.charAt(x), Colour.BLACK)).canvasColor);
                 }
             }

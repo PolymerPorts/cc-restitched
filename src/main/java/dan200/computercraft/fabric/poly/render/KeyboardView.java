@@ -7,6 +7,12 @@ import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
+import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class KeyboardView extends ScreenElement {
     private static final Key[][] KEYS = new Key[][] {
@@ -63,6 +69,19 @@ public class KeyboardView extends ScreenElement {
         return array;
     }).get();
 
+    public static final Char2ObjectMap<Key> CHAR_TO_KEY = ((Supplier<Char2ObjectMap<Key>>)() -> {
+        var map = new Char2ObjectOpenHashMap<Key>();
+
+        for (var i : KEYS) {
+            for (var x : i) {
+                map.put(x.lowerCase, x);
+                map.put(x.upperCase, x);
+            }
+        }
+
+        return map;
+    }).get();
+
     private final ComputerGui gui;
 
     public KeyboardView(int x, int y, ComputerGui gui) {
@@ -72,6 +91,7 @@ public class KeyboardView extends ScreenElement {
 
     @Override
     public void render(DrawableCanvas canvas, long tick, int mouseX, int mouseY) {
+        int buttonCollisionHeight = 16;
         int y = 0;
         for (int l = 0; l < KEYS.length; l++) {
             int x = 0;//(KEYBOARD_WIDTH - LINE_WIDTH[l]) / 2;
@@ -89,8 +109,8 @@ public class KeyboardView extends ScreenElement {
                             }
                         }
 
-                        boolean hover = ScreenElement.isIn(mouseX, mouseY, this.x + tX2 , this.y + 32 - 3, this.x + tX2 + 32, this.y + 32 + 14)
-                            || ScreenElement.isIn(mouseX, mouseY, this.x + tX2 , this.y + 48 - 3, this.x + tX2 + 26, this.y + 48 + 14);
+                        boolean hover = ScreenElement.isIn(mouseX, mouseY, this.x + tX2 , this.y + 32 - 3, this.x + tX2 + 32, this.y + 32 + buttonCollisionHeight)
+                            || ScreenElement.isIn(mouseX, mouseY, this.x + tX2 , this.y + 48 - 3, this.x + tX2 + 26, this.y + 48 + buttonCollisionHeight);
 
                         var color = isHeld
                             ? CanvasColor.WHITE_GRAY_LOW
@@ -114,7 +134,7 @@ public class KeyboardView extends ScreenElement {
                             CanvasUtils.fill(canvas, this.x + x + a, this.y + y * 16 + a, this.x + x + key.width() + a, this.y + y * 16 + 14 + a, color);
                         }
                     } else {
-                        var hover = ScreenElement.isIn(mouseX, mouseY, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + 14);
+                        var hover = ScreenElement.isIn(mouseX, mouseY, this.x + x, this.y + y * 16, this.x + x + key.width(), this.y + y * 16 + buttonCollisionHeight);
 
                         var color = isHeld
                             ? CanvasColor.WHITE_GRAY_LOW
@@ -164,7 +184,7 @@ public class KeyboardView extends ScreenElement {
         var height = KEYS.length;
         for (int ly = 0; ly < height; ly++) {
             var lys = ly * 16;
-            if (lys + 1 <= y && lys + 14 > y) {
+            if (lys <= y && lys + 16 > y) {
                 int lxs = 0;//(KEYBOARD_WIDTH - LINE_WIDTH[ly]) / 2;
                 for (var key : KEYS[ly]) {
                     if (lxs <= x && lxs + key.width() > x) {
@@ -226,5 +246,5 @@ public class KeyboardView extends ScreenElement {
         return new Key("", -1, width, (char) 0, (char) 0);
     }
 
-    private record Key(String display, int key, int width, char lowerCase, char upperCase) {}
+    public record Key(String display, int key, int width, char lowerCase, char upperCase) {}
 }

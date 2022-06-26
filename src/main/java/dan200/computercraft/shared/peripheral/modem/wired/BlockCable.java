@@ -260,7 +260,7 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
 
     @Override
     public Block getPolymerBlock(BlockState state) {
-        return Blocks.ANDESITE_WALL;
+        return Blocks.DEEPSLATE_TILE_WALL;
     }
 
     @Override
@@ -277,11 +277,11 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
         var down = state.getValue(DOWN) || modem.getFacing() == Direction.DOWN;
 
         if (!(east || north || west || south || up || down)) {
-            return (hasModem ? Blocks.ANDESITE_SLAB : Blocks.DIORITE_SLAB).defaultBlockState();
+            return (hasModem ? Blocks.DEEPSLATE_TILE_SLAB : Blocks.ANDESITE_SLAB).defaultBlockState();
         }
 
         if (up || down) {
-            var stair = (hasModem ? Blocks.ANDESITE_STAIRS : Blocks.DIORITE_STAIRS);
+            var stair = (hasModem ? Blocks.DEEPSLATE_TILE_STAIRS : Blocks.ANDESITE_STAIRS);
             if (east && !(west || north || south)) {
                 return stair.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST).setValue(StairBlock.HALF,  up ? Half.TOP : Half.BOTTOM);
             } else if (west && !(east || north || south)) {
@@ -296,7 +296,7 @@ public class BlockCable extends BlockGeneric implements SimpleWaterloggedBlock, 
         boolean forceUp = (east && !(west || north || south)) || (west && !(east || north || south)) || (north && !(east || west|| south)) || (south && !(east || north || west));
 
 
-        return (hasModem ? Blocks.ANDESITE_WALL : Blocks.DIORITE_WALL).defaultBlockState()
+        return (hasModem ? Blocks.DEEPSLATE_TILE_WALL : Blocks.ANDESITE_WALL).defaultBlockState()
             .setValue(WallBlock.UP, up || down || ((east || west) && (north || south)) || forceUp)
             .setValue(WallBlock.EAST_WALL, east ? WallSide.TALL : WallSide.NONE)
             .setValue(WallBlock.WEST_WALL, west ? WallSide.TALL : WallSide.NONE)

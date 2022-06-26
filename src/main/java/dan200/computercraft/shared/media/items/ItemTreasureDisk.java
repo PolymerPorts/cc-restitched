@@ -9,6 +9,7 @@ import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.filesystem.IMount;
 import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.core.filesystem.SubMount;
+import dan200.computercraft.fabric.poly.PolymerAutoTexturedItem;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.util.Colour;
 import eu.pb4.polymer.api.item.PolymerItem;
@@ -28,7 +29,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 
-public class ItemTreasureDisk extends Item implements IMedia, PolymerItem
+public class ItemTreasureDisk extends Item implements IMedia, PolymerAutoTexturedItem
 {
     private static final String NBT_TITLE = "Title";
     private static final String NBT_COLOUR = "Colour";
