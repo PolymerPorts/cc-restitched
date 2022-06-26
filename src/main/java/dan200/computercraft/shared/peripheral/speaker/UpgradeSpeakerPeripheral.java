@@ -6,7 +6,7 @@
 package dan200.computercraft.shared.peripheral.speaker;
 
 import dan200.computercraft.api.peripheral.IComputerAccess;
-import me.shedaniel.cloth.api.utils.v1.GameInstanceUtils;
+import dan200.computercraft.fabric.util.GameInstanceUtils;
 import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nonnull;

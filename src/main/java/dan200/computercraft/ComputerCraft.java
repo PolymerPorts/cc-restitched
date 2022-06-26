@@ -11,6 +11,7 @@ import dan200.computercraft.fabric.poly.Fonts;
 import dan200.computercraft.fabric.poly.PolymerSetup;
 import dan200.computercraft.fabric.poly.textures.GuiTextures;
 import dan200.computercraft.shared.Registry.ModBlocks;
+import dan200.computercraft.fabric.util.GameInstanceUtils;
 import dan200.computercraft.shared.common.ColourableRecipe;
 import dan200.computercraft.shared.computer.core.ServerComputerRegistry;
 import dan200.computercraft.shared.computer.recipe.ComputerUpgradeRecipe;
@@ -119,6 +120,7 @@ public final class ComputerCraft
         Registry.register( Registry.LOOT_CONDITION_TYPE, new ResourceLocation( ComputerCraft.MOD_ID, "player_creative" ), PlayerCreativeLootCondition.TYPE );
         Registry.register( Registry.LOOT_CONDITION_TYPE, new ResourceLocation( ComputerCraft.MOD_ID, "has_id" ), HasComputerIdLootCondition.TYPE );
         init();
+        GameInstanceUtils.init();
         PolymerSetup.setup();
     }
 }

@@ -17,7 +17,7 @@ import dan200.computercraft.core.computer.Computer;
 import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.core.computer.IComputerEnvironment;
 import dan200.computercraft.shared.common.ServerTerminal;
-import me.shedaniel.cloth.api.utils.v1.GameInstanceUtils;
+import dan200.computercraft.fabric.util.GameInstanceUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
