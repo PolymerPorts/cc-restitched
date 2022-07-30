@@ -2,8 +2,7 @@ package dan200.computercraft.fabric.mixin.poly;
 
 import dan200.computercraft.fabric.poly.gui.MapGui;
 import eu.pb4.sgui.virtual.VirtualScreenHandlerInterface;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.MinecraftServer;
@@ -16,6 +15,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Set;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplMixin {
@@ -30,13 +31,14 @@ public abstract class ServerGamePacketListenerImplMixin {
     public abstract void send(Packet<?> packet);
 
     @Shadow
-    public abstract void send(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener);
+    protected abstract PlayerChatMessage getSignedMessage(ServerboundChatPacket serverboundChatPacket);
 
     @Inject(method = "handleChat(Lnet/minecraft/network/protocol/game/ServerboundChatPacket;)V", at = @At("HEAD"), cancellable = true)
     private void ccp_onChat(ServerboundChatPacket serverboundChatPacket, CallbackInfo ci) {
         if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
-                computerGui.onChatInput(serverboundChatPacket.getMessage());
+                computerGui.onChatInput(serverboundChatPacket.message());
+                this.server.getPlayerList().broadcastMessageHeader(this.getSignedMessage(serverboundChatPacket), Set.of());
             });
             ci.cancel();
         }

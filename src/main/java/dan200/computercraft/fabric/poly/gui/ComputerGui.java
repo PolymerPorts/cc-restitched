@@ -1,6 +1,5 @@
 package dan200.computercraft.fabric.poly.gui;
 
-import com.mojang.authlib.GameProfile;
 import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
 import dan200.computercraft.fabric.poly.Keys;
 import dan200.computercraft.fabric.poly.render.*;
@@ -14,17 +13,17 @@ import dan200.computercraft.shared.computer.upload.FileUpload;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,11 +33,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 public final class ComputerGui extends MapGui implements IContainerComputer {
 
-    private static final ClientboundPlayerInfoPacket ADDITIONAL_SUGGESTIONS_PACKET;
-    private static final ClientboundPlayerInfoPacket ADDITIONAL_SUGGESTIONS_REMOVE_PACKET;
+    private static final Packet<ClientGamePacketListener> ADDITIONAL_SUGGESTIONS_PACKET;
+    private static final Packet<ClientGamePacketListener> ADDITIONAL_SUGGESTIONS_REMOVE_PACKET;
 
     private static final Map<String, BiConsumer<ComputerGui, String>> ACTIONS = new HashMap<>();
 
@@ -69,7 +69,7 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
             if (arg != null && !arg.isEmpty()) {
                 char character = arg.charAt(0);
 
-                var args = arg.length() == 1 ? new String[]{ arg } : arg.split(" ", 2);
+                var args = arg.length() == 1 ? new String[]{arg} : arg.split(" ", 2);
 
                 try {
                     if (args[0].length() > 1) {
@@ -103,18 +103,14 @@ public final class ComputerGui extends MapGui implements IContainerComputer {
         });
 
 
-        ADDITIONAL_SUGGESTIONS_PACKET = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER);
-        ADDITIONAL_SUGGESTIONS_REMOVE_PACKET = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER);
+        var list = ACTIONS.keySet().stream().map(x -> ";" + x).collect(Collectors.toList());
 
-        int i = 0;
-        for (var s : ACTIONS.keySet()) {
-            var entry = new ClientboundPlayerInfoPacket.PlayerUpdate(
-                new GameProfile(new UUID(0x54345345634l, i++), ";" + s), 999, GameType.SPECTATOR,
-                Component.literal(";" + s).withStyle(ChatFormatting.DARK_RED), null
-            );
-            ADDITIONAL_SUGGESTIONS_PACKET.getEntries().add(entry);
-            ADDITIONAL_SUGGESTIONS_REMOVE_PACKET.getEntries().add(entry);
-        }
+        ADDITIONAL_SUGGESTIONS_PACKET = new ClientboundCustomChatCompletionsPacket(
+            ClientboundCustomChatCompletionsPacket.Action.ADD, list
+        );
+        ADDITIONAL_SUGGESTIONS_REMOVE_PACKET = new ClientboundCustomChatCompletionsPacket(
+            ClientboundCustomChatCompletionsPacket.Action.REMOVE, list
+        );
     }
 
     public final ComputerDisplayAccess computer;

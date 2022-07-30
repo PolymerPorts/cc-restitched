@@ -140,6 +140,11 @@ public final class Registry {
         private static BlockBehaviour.Properties modemProperties() {
             return BlockBehaviour.Properties.of(Material.STONE, MaterialColor.STONE).strength(1.5f);
         }
+
+        private static <T extends Block> T register(String id, T block) {
+            net.minecraft.core.Registry.register(net.minecraft.core.Registry.BLOCK, new ResourceLocation(MOD_ID, id), block);
+            return block;
+        }
     }
 
     public static class ModBlockEntities {

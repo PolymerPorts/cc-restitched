@@ -9,6 +9,7 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+
         steps:
             - uses: actions/cache@v2
               with:
@@ -20,15 +21,10 @@ jobs:
                   restore-keys: |
                       gradle-
             - uses: actions/checkout@v2
-              with:
-                  submodules: true
             - name: Set up JDK
               uses: actions/setup-java@v1
               with:
                   java-version: 17
-
-            - name: Pull submodules
-              run: git submodule update --init --recursive
 
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
@@ -36,10 +32,12 @@ jobs:
             - name: Build and publish with Gradle
               run: ./gradlew build publish
               env:
+                  MAVEN_URL: ${{ secrets.MAVEN_URL }}
+                  MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+                  MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
                   CURSEFORGE: ${{ secrets.CURSEFORGE }}
                   MODRINTH: ${{ secrets.MODRINTH }}
                   CHANGELOG: ${{ github.event.release.body }}
-
             - name: Upload GitHub release
               uses: AButler/upload-release-assets@v2.0
               with:
