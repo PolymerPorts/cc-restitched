@@ -310,7 +310,7 @@ if (System.getenv("MODRINTH")) {
         versionType = "release"
         uploadFile = remapJar
         gameVersions = [((String) project.mc_version)]
-        loaders = ["fabric"]
+        loaders = ["fabric", "quilt"]
         changelog = System.getenv("CHANGELOG")
     }
 
