@@ -12,6 +12,7 @@ import dan200.computercraft.shared.common.IBundledRedstoneBlock;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.computer.items.IComputerItem;
+import eu.pb4.polymer.core.api.block.PolymerHeadBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -35,7 +36,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public abstract class BlockComputerBase<T extends TileComputerBase> extends BlockGeneric implements IBundledRedstoneBlock
+public abstract class BlockComputerBase<T extends TileComputerBase> extends BlockGeneric implements IBundledRedstoneBlock, PolymerHeadBlock
 {
     private static final ResourceLocation DROP = new ResourceLocation( ComputerCraft.MOD_ID, "computer" );
 

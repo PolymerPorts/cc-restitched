@@ -7,7 +7,7 @@ package dan200.computercraft.shared.common;
 
 import dan200.computercraft.shared.util.ColourTracker;
 import dan200.computercraft.shared.util.ColourUtils;
-import eu.pb4.polymer.api.item.PolymerRecipe;
+import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeColor;

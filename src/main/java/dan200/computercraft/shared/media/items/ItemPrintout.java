@@ -9,7 +9,7 @@ import dan200.computercraft.fabric.poly.PolymerAutoTexturedItem;
 import dan200.computercraft.fabric.poly.gui.PrintedPageGui;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.ContainerHeldItem;
-import eu.pb4.polymer.api.item.PolymerItem;
+import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

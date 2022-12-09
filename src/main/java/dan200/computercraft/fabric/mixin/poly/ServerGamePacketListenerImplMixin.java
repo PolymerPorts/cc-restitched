@@ -30,15 +30,11 @@ public abstract class ServerGamePacketListenerImplMixin {
     @Shadow
     public abstract void send(Packet<?> packet);
 
-    @Shadow
-    protected abstract PlayerChatMessage getSignedMessage(ServerboundChatPacket serverboundChatPacket);
-
     @Inject(method = "handleChat(Lnet/minecraft/network/protocol/game/ServerboundChatPacket;)V", at = @At("HEAD"), cancellable = true)
     private void ccp_onChat(ServerboundChatPacket serverboundChatPacket, CallbackInfo ci) {
         if (this.player.containerMenu instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
                 computerGui.onChatInput(serverboundChatPacket.message());
-                this.server.getPlayerList().broadcastMessageHeader(this.getSignedMessage(serverboundChatPacket), Set.of());
             });
             ci.cancel();
         }

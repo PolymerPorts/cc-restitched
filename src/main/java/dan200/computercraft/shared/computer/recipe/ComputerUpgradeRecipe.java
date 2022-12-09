@@ -7,7 +7,7 @@ package dan200.computercraft.shared.computer.recipe;
 
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.items.IComputerItem;
-import eu.pb4.polymer.api.item.PolymerRecipe;
+import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;

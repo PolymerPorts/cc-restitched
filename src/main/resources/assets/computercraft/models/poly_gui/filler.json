@@ -1,6 +1,6 @@
 {
     "parent": "item/generated",
     "textures": {
-        "layer0": "computercraft:poly_gui/filler"
+        "layer0": "computercraft:item/poly_gui/filler"
     }
 }

@@ -4,7 +4,7 @@ import dan200.computercraft.fabric.poly.PolymerSetup;
 import dan200.computercraft.shared.peripheral.printer.TilePrinter;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import dan200.computercraft.shared.util.ValidatingSlot;
-import eu.pb4.polymer.api.resourcepack.PolymerRPUtils;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.ChatFormatting;
@@ -20,7 +20,7 @@ public class PrinterInventoryGui extends SimpleGui {
     public PrinterInventoryGui(ServerPlayer player, TilePrinter printer) {
         super(MenuType.GENERIC_9x3, player, false);
 
-        var pack = PolymerRPUtils.hasPack(player);
+        var pack = PolymerResourcePackUtils.hasPack(player);
         this.setTitle(pack
             ? Component.empty().append(Component.literal("-0.").setStyle(Style.EMPTY.withFont(PolymerSetup.GUI_FONT).withColor(ChatFormatting.WHITE))).append(printer.getDisplayName())
             : printer.getDisplayName()

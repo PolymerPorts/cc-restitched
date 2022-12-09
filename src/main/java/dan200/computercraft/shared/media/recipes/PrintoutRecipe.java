@@ -6,7 +6,7 @@
 package dan200.computercraft.shared.media.recipes;
 
 import dan200.computercraft.shared.media.items.ItemPrintout;
-import eu.pb4.polymer.api.item.PolymerRecipe;
+import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;

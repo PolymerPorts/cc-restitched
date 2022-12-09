@@ -24,13 +24,13 @@ import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.turtle.apis.TurtleAPI;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.util.*;
-import eu.pb4.polymer.api.utils.PolymerObject;
-import eu.pb4.polymer.api.utils.PolymerUtils;
-import eu.pb4.polymer.impl.other.FakeWorld;
+import eu.pb4.polymer.core.api.utils.PolymerObject;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -610,14 +610,14 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
         public TurtleModel(ComputerProxy proxy) {
             this.proxy = proxy;
-            this.main = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+            this.main = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
             this.main.setNoGravity(true);
             this.main.setInvisible(true);
             var stack = new ItemStack(Items.PLAYER_HEAD);
             stack.getOrCreateTag().put("SkullOwner", PolymerUtils.createSkullOwner(this.proxy.getBlockEntity().getFamily() == ComputerFamily.ADVANCED ? HeadTextures.ADVANCED_TURTLE : HeadTextures.TURTLE));
             this.main.setItemSlot(EquipmentSlot.HEAD, stack);
 
-            this.color = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+            this.color = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
             this.color.setNoGravity(true);
             this.color.setInvisible(true);
             ((ArmorStandAccessor) this.color).callSetSmall(true);
@@ -625,7 +625,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
             var rightUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.RIGHT);
             if (rightUpgrade != null) {
-                this.right = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+                this.right = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
                 this.right.setNoGravity(true);
                 this.right.setInvisible(true);
                 ((ArmorStandAccessor) this.right).callSetSmall(rightUpgrade.getCraftingItem().getItem() instanceof BlockItem);
@@ -637,7 +637,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
 
             var leftUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.LEFT);
             if (leftUpgrade != null) {
-                this.left = new ArmorStand(EntityType.ARMOR_STAND, FakeWorld.INSTANCE);
+                this.left = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
                 this.left.setNoGravity(true);
                 this.left.setInvisible(true);
                 ((ArmorStandAccessor) this.left).callSetSmall(leftUpgrade.getCraftingItem().getItem() instanceof BlockItem);
@@ -669,25 +669,25 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
                 for (var player : ((ServerLevel) this.proxy.getBlockEntity().getLevel()).getPlayers((player) -> player.getEyePosition().distanceToSqr(this.main.getEyePosition()) < 48*48)) {
                     if (this.watchers.add(player)) {
                         player.connection.send(this.main.getAddEntityPacket());
-                        player.connection.send(new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData(), true));
+                        player.connection.send(new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData().getNonDefaultValues()));
                         player.connection.send(new ClientboundSetEquipmentPacket(this.main.getId(),
                             List.of(Pair.of(EquipmentSlot.HEAD, this.main.getItemBySlot(EquipmentSlot.HEAD)))));
 
                         player.connection.send(this.color.getAddEntityPacket());
-                        player.connection.send(new ClientboundSetEntityDataPacket(this.color.getId(), this.color.getEntityData(), true));
+                        player.connection.send(new ClientboundSetEntityDataPacket(this.color.getId(), this.color.getEntityData().getNonDefaultValues()));
                         player.connection.send(new ClientboundSetEquipmentPacket(this.color.getId(),
                             List.of(Pair.of(EquipmentSlot.HEAD, this.color.getItemBySlot(EquipmentSlot.HEAD)))));
 
                         if (this.right != null) {
                             player.connection.send(this.right.getAddEntityPacket());
-                            player.connection.send(new ClientboundSetEntityDataPacket(this.right.getId(), this.right.getEntityData(), true));
+                            player.connection.send(new ClientboundSetEntityDataPacket(this.right.getId(), this.right.getEntityData().getNonDefaultValues()));
                             player.connection.send(new ClientboundSetEquipmentPacket(this.right.getId(),
                                 List.of(Pair.of(EquipmentSlot.HEAD, this.right.getItemBySlot(EquipmentSlot.HEAD)))));
                         }
 
                         if (this.left != null) {
                             player.connection.send(this.left.getAddEntityPacket());
-                            player.connection.send(new ClientboundSetEntityDataPacket(this.left.getId(), this.left.getEntityData(), true));
+                            player.connection.send(new ClientboundSetEntityDataPacket(this.left.getId(), this.left.getEntityData().getNonDefaultValues()));
                             player.connection.send(new ClientboundSetEquipmentPacket(this.left.getId(),
                                 List.of(Pair.of(EquipmentSlot.HEAD, this.left.getItemBySlot(EquipmentSlot.HEAD)))));
                         }
@@ -700,7 +700,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             var set = (name == null || name.isEmpty());
             this.main.setCustomNameVisible(!(set));
             this.main.setCustomName(set ? null : Component.literal(name));
-            var packet = new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData(), false);
+            var packet = new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData().packDirty());
 
             for (var player : this.watchers) {
                 player.connection.send(packet);
@@ -711,7 +711,7 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             if (color == null) {
                 this.color.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
             } else {
-                this.color.setItemSlot(EquipmentSlot.HEAD, Registry.ITEM.get(new ResourceLocation(color.getName() + "_wool")).getDefaultInstance());
+                this.color.setItemSlot(EquipmentSlot.HEAD, BuiltInRegistries.ITEM.get(new ResourceLocation(color.getName() + "_wool")).getDefaultInstance());
             }
 
             var packet = new ClientboundSetEquipmentPacket(this.color.getId(),

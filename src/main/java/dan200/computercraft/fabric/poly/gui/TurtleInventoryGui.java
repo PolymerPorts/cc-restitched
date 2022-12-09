@@ -3,7 +3,7 @@ package dan200.computercraft.fabric.poly.gui;
 import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
 import dan200.computercraft.fabric.poly.PolymerSetup;
 import dan200.computercraft.shared.turtle.blocks.TileTurtle;
-import eu.pb4.polymer.api.resourcepack.PolymerRPUtils;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -18,7 +18,7 @@ public class TurtleInventoryGui extends SimpleGui {
 
     public TurtleInventoryGui(ServerPlayer player, TileTurtle turtle) {
         super(MenuType.GENERIC_9x2, player, false);
-        var pack = PolymerRPUtils.hasPack(player);
+        var pack = PolymerResourcePackUtils.hasPack(player);
         this.setTitle(pack
             ? Component.empty().append(Component.literal("-1.").setStyle(Style.EMPTY.withFont(PolymerSetup.GUI_FONT).withColor(ChatFormatting.WHITE))).append(turtle.getDisplayName())
             : turtle.getDisplayName()

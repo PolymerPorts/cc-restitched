@@ -1,29 +1,21 @@
 package dan200.computercraft.fabric.poly.gui;
 
 import com.google.common.base.Predicates;
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
-import dan200.computercraft.fabric.poly.render.*;
+import dan200.computercraft.fabric.poly.render.CanvasRenderer;
+import dan200.computercraft.fabric.poly.render.ImageButton;
+import dan200.computercraft.fabric.poly.render.ScreenElement;
 import dan200.computercraft.fabric.poly.textures.GuiTextures;
-import dan200.computercraft.fabric.poly.textures.RepeatingCanvas;
-import dan200.computercraft.shared.computer.core.IComputer;
-import dan200.computercraft.shared.computer.core.IContainerComputer;
-import dan200.computercraft.shared.computer.core.InputState;
-import dan200.computercraft.shared.computer.upload.FileSlice;
-import dan200.computercraft.shared.computer.upload.FileUpload;
-import dan200.computercraft.shared.turtle.blocks.TileTurtle;
 import eu.pb4.mapcanvas.api.core.*;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
-import eu.pb4.polymer.impl.other.FakeWorld;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.sgui.api.gui.HotbarGui;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -43,14 +35,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.BiConsumer;
 
 public class MapGui extends HotbarGui {
     private static final Packet<?> COMMAND_PACKET;
@@ -83,7 +68,7 @@ public class MapGui extends HotbarGui {
         this.canvas.addPlayer(player);
         this.virtualDisplay.addPlayer(player);
 
-        this.entity = new Horse(EntityType.HORSE, FakeWorld.INSTANCE);
+        this.entity = new Horse(EntityType.HORSE, PolymerUtils.getFakeWorld());
         this.entity.setPos(pos.getX() + 0.5, pos.getY() - 1, pos.getZ() - 1.8);
         this.entity.setNoGravity(true);
         this.entity.setYHeadRot(dir.getOpposite().toYRot());
@@ -94,7 +79,7 @@ public class MapGui extends HotbarGui {
         this.cursor = this.canvas.createIcon(MapDecoration.Type.TARGET_POINT, true, this.cursorX, this.cursorY, (byte) 14, null);
         player.connection.send(this.entity.getAddEntityPacket());
 
-        player.connection.send(new ClientboundSetEntityDataPacket(this.entity.getId(), this.entity.getEntityData(), true));
+        player.connection.send(new ClientboundSetEntityDataPacket(this.entity.getId(), this.entity.getEntityData().getNonDefaultValues()));
         player.connection.send(new ClientboundSetCameraPacket(this.entity));
         this.xRot = player.getXRot();
         this.yRot = player.getYRot();
@@ -122,7 +107,7 @@ public class MapGui extends HotbarGui {
                 CanvasUtils.fill(this.renderer.canvas(), x * 128, 0, x * 128 + 1, this.canvas.getHeight(), CanvasColor.RED_HIGH);
             }
             for (int x = 0; x < this.canvas.getSectionsHeight(); x++) {
-                CanvasUtils.fill(this.renderer.canvas(), 0,x * 128, this.canvas.getWidth(), x * 128 + 1, CanvasColor.BLUE_HIGH);
+                CanvasUtils.fill(this.renderer.canvas(), 0, x * 128, this.canvas.getWidth(), x * 128 + 1, CanvasColor.BLUE_HIGH);
             }
         }
 
@@ -177,7 +162,7 @@ public class MapGui extends HotbarGui {
         this.xRot = xRot;
         this.yRot = yRot;
 
-        this.cursorX = this.cursorX + (int) ((xRot > 0.3 ? 3: xRot < -0.3 ? -3 : 0) * (Math.abs(xRot) - 0.3));
+        this.cursorX = this.cursorX + (int) ((xRot > 0.3 ? 3 : xRot < -0.3 ? -3 : 0) * (Math.abs(xRot) - 0.3));
         this.cursorY = this.cursorY + (int) ((yRot > 0.3 ? 3 : yRot < -0.3 ? -3 : 0) * (Math.abs(yRot) - 0.3));
 
         this.cursorX = Mth.clamp(this.cursorX, 5, this.canvas.getWidth() * 2 - 5);

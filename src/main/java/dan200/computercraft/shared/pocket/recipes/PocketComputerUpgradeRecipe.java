@@ -10,7 +10,7 @@ import dan200.computercraft.shared.PocketUpgrades;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.pocket.items.ItemPocketComputer;
 import dan200.computercraft.shared.pocket.items.PocketComputerItemFactory;
-import eu.pb4.polymer.api.item.PolymerRecipe;
+import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;

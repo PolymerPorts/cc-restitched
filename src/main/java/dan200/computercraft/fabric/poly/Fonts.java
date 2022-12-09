@@ -3,7 +3,7 @@ package dan200.computercraft.fabric.poly;
 import eu.pb4.mapcanvas.api.font.BitmapFontBuilder;
 import eu.pb4.mapcanvas.api.font.CanvasFont;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
-import eu.pb4.polymer.api.utils.PolymerUtils;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 

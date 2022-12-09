@@ -8,8 +8,10 @@ package dan200.computercraft.shared.peripheral.modem.wired;
 import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.Registry;
 import dan200.computercraft.shared.common.BlockGeneric;
-import eu.pb4.polymer.api.block.PolymerHeadBlock;
-import eu.pb4.polymer.api.utils.PolymerUtils;
+import eu.pb4.polymer.core.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -60,7 +62,7 @@ public class BlockWiredModemFull extends BlockGeneric implements PolymerHeadBloc
     }
 
     @Override
-    public String getPolymerSkinValue(BlockState state) {
+    public String getPolymerSkinValue(BlockState state, BlockPos pos, ServerPlayer player) {
         return HeadTextures.WIRED_MODEM;
     }
 }

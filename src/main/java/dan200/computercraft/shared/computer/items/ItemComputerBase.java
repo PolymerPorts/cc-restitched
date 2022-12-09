@@ -11,8 +11,8 @@ import dan200.computercraft.api.filesystem.IMount;
 import dan200.computercraft.api.media.IMedia;
 import dan200.computercraft.shared.computer.blocks.BlockComputerBase;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
-import eu.pb4.polymer.api.block.PolymerHeadBlock;
-import eu.pb4.polymer.api.item.PolymerHeadBlockItem;
+import eu.pb4.polymer.core.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.core.api.item.PolymerHeadBlockItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -30,7 +30,7 @@ public abstract class ItemComputerBase extends PolymerHeadBlockItem implements I
 
     public ItemComputerBase( BlockComputerBase<?> block, Properties settings )
     {
-        super( (PolymerHeadBlock) block, settings );
+        super( block, settings );
         family = block.getFamily();
     }
 

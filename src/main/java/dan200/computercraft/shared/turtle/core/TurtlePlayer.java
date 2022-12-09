@@ -12,7 +12,7 @@ import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.shared.util.DirectionUtil;
 import dan200.computercraft.shared.util.InventoryUtil;
 import dan200.computercraft.shared.util.WorldUtil;
-import eu.pb4.polymer.api.entity.PolymerEntity;
+import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -270,7 +270,7 @@ public final class TurtlePlayer extends FakePlayer implements PolymerEntity
     }
 
     @Override
-    public EntityType<?> getPolymerEntityType() {
+    public EntityType<?> getPolymerEntityType(ServerPlayer player) {
         return EntityType.PLAYER;
     }
     //endregion

@@ -14,7 +14,7 @@ import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.turtle.items.ITurtleItem;
 import dan200.computercraft.shared.turtle.items.TurtleItemFactory;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
-import eu.pb4.polymer.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.core.api.block.PolymerHeadBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -212,12 +212,12 @@ public class BlockTurtle extends BlockComputerBase<TileTurtle> implements Simple
     }
 
     @Override
-    public void onPolymerBlockSend(ServerPlayer player, BlockPos.MutableBlockPos pos, BlockState blockState) {
-        // noop
+    public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, ServerPlayer player) {
+
     }
 
     @Override
-    public String getPolymerSkinValue(BlockState state) {
+    public String getPolymerSkinValue(BlockState state, BlockPos pos, ServerPlayer player) {
         return this.getFamily() == ComputerFamily.NORMAL ? HeadTextures.TURTLE : HeadTextures.ADVANCED_TURTLE;
     }
 }

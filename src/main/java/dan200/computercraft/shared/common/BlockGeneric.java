@@ -5,8 +5,8 @@
  */
 package dan200.computercraft.shared.common;
 
-import eu.pb4.polymer.api.block.PolymerBlock;
-import eu.pb4.polymer.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.core.api.block.PolymerBlock;
+import eu.pb4.polymer.core.api.block.PolymerHeadBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;

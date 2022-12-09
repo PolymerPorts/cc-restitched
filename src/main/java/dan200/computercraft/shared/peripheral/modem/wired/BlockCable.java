@@ -12,7 +12,7 @@ import dan200.computercraft.shared.common.BlockGeneric;
 import dan200.computercraft.shared.peripheral.modem.wireless.TileWirelessModem;
 import dan200.computercraft.shared.util.WaterloggableHelpers;
 import dan200.computercraft.shared.util.WorldUtil;
-import eu.pb4.polymer.api.block.PolymerBlock;
+import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

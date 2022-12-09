@@ -9,9 +9,11 @@ import dan200.computercraft.fabric.poly.textures.HeadTextures;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ComputerState;
 import dan200.computercraft.shared.computer.items.ComputerItemFactory;
-import eu.pb4.polymer.api.block.PolymerHeadBlock;
-import eu.pb4.polymer.api.utils.PolymerUtils;
+import eu.pb4.polymer.core.api.block.PolymerHeadBlock;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -107,7 +109,7 @@ public class BlockComputer<T extends TileComputer> extends BlockComputerBase<T> 
     }
 
     @Override
-    public String getPolymerSkinValue(BlockState state) {
+    public String getPolymerSkinValue(BlockState state, BlockPos pos, ServerPlayer player) {
         return state.getValue(STATE) == ComputerState.OFF ? this.offTexture : this.onTexture;
     }
 }

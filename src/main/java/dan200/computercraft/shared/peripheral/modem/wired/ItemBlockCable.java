@@ -7,7 +7,7 @@ package dan200.computercraft.shared.peripheral.modem.wired;
 
 import dan200.computercraft.fabric.poly.textures.PolymerAutoTexturedBlockItem;
 import dan200.computercraft.shared.Registry;
-import eu.pb4.polymer.api.item.PolymerBlockItem;
+import eu.pb4.polymer.core.api.item.PolymerBlockItem;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

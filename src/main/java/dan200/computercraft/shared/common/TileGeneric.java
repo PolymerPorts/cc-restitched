@@ -5,7 +5,7 @@
  */
 package dan200.computercraft.shared.common;
 
-import eu.pb4.polymer.api.utils.PolymerObject;
+import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
