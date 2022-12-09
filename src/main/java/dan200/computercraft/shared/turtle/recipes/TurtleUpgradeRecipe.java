@@ -15,18 +15,19 @@ import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
 public final class TurtleUpgradeRecipe extends CustomRecipe implements PolymerRecipe
 {
-    private TurtleUpgradeRecipe( ResourceLocation id )
+    private TurtleUpgradeRecipe( ResourceLocation id, CraftingBookCategory category )
     {
-        super( id );
+        super( id, category );
     }
 
     @Override
@@ -175,5 +176,5 @@ public final class TurtleUpgradeRecipe extends CustomRecipe implements PolymerRe
         return SERIALIZER;
     }
 
-    public static final SimpleRecipeSerializer<TurtleUpgradeRecipe> SERIALIZER = new SimpleRecipeSerializer<>( TurtleUpgradeRecipe::new );
+    public static final SimpleCraftingRecipeSerializer<TurtleUpgradeRecipe> SERIALIZER = new SimpleCraftingRecipeSerializer<>( TurtleUpgradeRecipe::new );
 }

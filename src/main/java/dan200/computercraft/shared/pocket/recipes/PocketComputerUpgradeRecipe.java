@@ -14,18 +14,19 @@ import eu.pb4.polymer.api.item.PolymerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
 public final class PocketComputerUpgradeRecipe extends CustomRecipe implements PolymerRecipe
 {
-    private PocketComputerUpgradeRecipe( ResourceLocation identifier )
+    private PocketComputerUpgradeRecipe( ResourceLocation identifier, CraftingBookCategory category )
     {
-        super( identifier );
+        super( identifier, category );
     }
 
     @Override
@@ -114,5 +115,5 @@ public final class PocketComputerUpgradeRecipe extends CustomRecipe implements P
         return SERIALIZER;
     }
 
-    public static final SimpleRecipeSerializer<PocketComputerUpgradeRecipe> SERIALIZER = new SimpleRecipeSerializer<>( PocketComputerUpgradeRecipe::new );
+    public static final SimpleCraftingRecipeSerializer<PocketComputerUpgradeRecipe> SERIALIZER = new SimpleCraftingRecipeSerializer<>( PocketComputerUpgradeRecipe::new );
 }

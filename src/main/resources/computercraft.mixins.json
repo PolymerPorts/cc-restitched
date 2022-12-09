@@ -10,15 +10,11 @@
     "MixinChunkMap",
     "MixinEntity",
     "MixinItemEntity",
-    "MixinMatrix4f",
     "MixinServerLevel",
     "MixinServerPlayerGameMode",
     "poly.ArmorStandAccessor",
     "poly.PlayerMixin",
     "poly.ServerGamePacketListenerImplMixin"
-  ],
-  "server": [
-    "MixinLanguage"
   ],
   "injectors": {
     "defaultRequire": 1

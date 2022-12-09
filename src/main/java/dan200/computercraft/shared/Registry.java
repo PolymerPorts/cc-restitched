@@ -47,10 +47,13 @@ import eu.pb4.polymer.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.api.item.PolymerBlockItem;
 import eu.pb4.polymer.api.item.PolymerHeadBlockItem;
 import eu.pb4.polymer.api.item.PolymerItemGroup;
+import dan200.computercraft.shared.util.Colour;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -68,7 +71,6 @@ import net.minecraft.world.level.material.MaterialColor;
 import java.util.Collection;
 import java.util.function.BiFunction;
 
-import static net.minecraft.core.Registry.BLOCK_ENTITY_TYPE;
 
 public final class Registry {
     public static final String MOD_ID = ComputerCraft.MOD_ID;
@@ -90,7 +92,13 @@ public final class Registry {
         CauldronInteraction.WATER.put(ModItems.TURTLE_ADVANCED, ItemTurtle.CAULDRON_INTERACTION);
     }
 
-    public static final class ModBlocks {
+    public static final class ModBlocks
+    {
+        public static <T extends Block> T register( String id, T value )
+        {
+            return net.minecraft.core.Registry.register( BuiltInRegistries.BLOCK, new ResourceLocation( MOD_ID, id ), value );
+        }
+
         public static final BlockMonitor MONITOR_NORMAL =
             register("monitor_normal", new BlockMonitor(properties(), () -> ModBlockEntities.MONITOR_NORMAL, Blocks.SMOOTH_STONE));
 
@@ -141,16 +149,14 @@ public final class Registry {
             return BlockBehaviour.Properties.of(Material.STONE, MaterialColor.STONE).strength(1.5f);
         }
 
-        private static <T extends Block> T register(String id, T block) {
-            net.minecraft.core.Registry.register(net.minecraft.core.Registry.BLOCK, new ResourceLocation(MOD_ID, id), block);
-            return block;
-        }
     }
 
-    public static class ModBlockEntities {
-        private static <T extends BlockEntity> BlockEntityType<T> ofBlock(Block block, String id, BiFunction<BlockPos, BlockState, T> factory) {
-            BlockEntityType<T> blockEntityType = FabricBlockEntityTypeBuilder.create(factory::apply, block).build();
-            net.minecraft.core.Registry.register(BLOCK_ENTITY_TYPE, new ResourceLocation(MOD_ID, id), blockEntityType);
+    public static class ModBlockEntities
+    {
+        private static <T extends BlockEntity> BlockEntityType<T> ofBlock( Block block, String id, BiFunction<BlockPos, BlockState, T> factory )
+        {
+            BlockEntityType<T> blockEntityType = FabricBlockEntityTypeBuilder.create( factory::apply, block ).build();
+            net.minecraft.core.Registry.register( BuiltInRegistries.BLOCK_ENTITY_TYPE, new ResourceLocation( MOD_ID, id ), blockEntityType );
             PolymerBlockUtils.registerBlockEntity(blockEntityType);
             return blockEntityType;
         }
@@ -198,10 +204,8 @@ public final class Registry {
             ofBlock(ModBlocks.WIRELESS_MODEM_ADVANCED, "wireless_modem_advanced", (blockPos, blockState) -> new TileWirelessModem(ModBlockEntities.WIRELESS_MODEM_ADVANCED, blockPos, blockState, true));
     }
 
-    public static final class ModItems {
-        private static final CreativeModeTab mainItemGroup = PolymerItemGroup.create(new ResourceLocation(MOD_ID, "main"), Component.literal("ComputerCraft"), () -> new ItemStack(ModBlocks.COMPUTER_NORMAL));
-
-
+    public static final class ModItems
+    {
         public static final ItemComputer COMPUTER_NORMAL =
             ofBlock(ModBlocks.COMPUTER_NORMAL, ItemComputer::new);
 
@@ -268,26 +272,78 @@ public final class Registry {
         public static final ItemBlockCable.WiredModem WIRED_MODEM =
             register("wired_modem", new ItemBlockCable.WiredModem(ModBlocks.CABLE, properties()));
 
+        private static final CreativeModeTab mainItemGroup = FabricItemGroup.builder( new ResourceLocation( MOD_ID, "main" ) )
+            .icon( () -> new ItemStack( ModBlocks.COMPUTER_NORMAL ) )
+            .displayItems( ( featureFlagSet, output, operator ) -> {
+                output.accept( COMPUTER_NORMAL );
+                output.accept( COMPUTER_ADVANCED );
 
-        private static <B extends Block, I extends Item> I ofBlock(B parent, BiFunction<B, Item.Properties, I> supplier) {
-            return register(net.minecraft.core.Registry.BLOCK.getKey(parent).getPath(), supplier.apply(parent, properties()));
+                if ( operator )
+                {
+                    output.accept( COMPUTER_COMMAND );
+                }
+
+                output.accept( POCKET_COMPUTER_NORMAL.create( -1, null, -1, null ) );
+                dan200.computercraft.shared.PocketUpgrades.getVanillaUpgrades().map( x -> POCKET_COMPUTER_NORMAL.create( -1, null, -1, x ) ).forEach( output::accept );
+
+                output.accept( POCKET_COMPUTER_ADVANCED.create( -1, null, -1, null ) );
+                dan200.computercraft.shared.PocketUpgrades.getVanillaUpgrades().map( x -> POCKET_COMPUTER_ADVANCED.create( -1, null, -1, x ) ).forEach( output::accept );
+
+
+                output.accept( TURTLE_NORMAL.create( -1, null, -1, null, null, 0, null ) );
+                dan200.computercraft.shared.TurtleUpgrades.getVanillaUpgrades()
+                    .map( x -> TURTLE_NORMAL.create( -1, null, -1, null, x, 0, null ) )
+                    .forEach( output::accept );
+
+                output.accept( TURTLE_ADVANCED.create( -1, null, -1, null, null, 0, null ) );
+                dan200.computercraft.shared.TurtleUpgrades.getVanillaUpgrades()
+                    .map( x -> TURTLE_ADVANCED.create( -1, null, -1, null, x, 0, null ) )
+                    .forEach( output::accept );
+
+                for( int colour = 0; colour < 16; colour++ )
+                {
+                    output.accept( DISK.createFromIDAndColour( -1, null, Colour.VALUES[colour].getHex() ) );
+                }
+
+                output.accept( PRINTED_PAGE );
+                output.accept( PRINTED_PAGES );
+                output.accept( PRINTED_BOOK );
+
+                output.accept( SPEAKER );
+                output.accept( DISK_DRIVE );
+                output.accept( PRINTER );
+                output.accept( MONITOR_NORMAL );
+                output.accept( MONITOR_ADVANCED );
+                output.accept( WIRELESS_MODEM_NORMAL );
+                output.accept( WIRELESS_MODEM_ADVANCED );
+                output.accept( WIRED_MODEM_FULL );
+                output.accept( WIRED_MODEM );
+                output.accept( CABLE );
+            } )
+            .build();
+
+        private static <B extends Block, I extends Item> I ofBlock( B parent, BiFunction<B, Item.Properties, I> supplier )
+        {
+            return net.minecraft.core.Registry.register( BuiltInRegistries.ITEM, BuiltInRegistries.BLOCK.getKey( parent ), supplier.apply( parent, properties() ) );
         }
 
-        private static Item.Properties properties() {
-            return new Item.Properties().tab(mainItemGroup);
+        private static Item.Properties properties()
+        {
+            return new Item.Properties();
         }
 
-        private static <T extends Item> T register(String id, T item) {
+        private static <T extends Item> T register( String id, T item )
+        {
             if (item instanceof PolymerAutoTexturedItem) {
                 PolymerSetup.requestModel(new ResourceLocation(MOD_ID, "item/" + id), item);
             }
-            return net.minecraft.core.Registry.register(net.minecraft.core.Registry.ITEM, new ResourceLocation(MOD_ID, id), item);
+            return net.minecraft.core.Registry.register( BuiltInRegistries.ITEM, new ResourceLocation( MOD_ID, id ), item );
         }
     }
 
     public static class ModEntities {
         public static final EntityType<TurtlePlayer> TURTLE_PLAYER =
-            net.minecraft.core.Registry.register(net.minecraft.core.Registry.ENTITY_TYPE, new ResourceLocation(MOD_ID, "turtle_player"),
+            net.minecraft.core.Registry.register(BuiltInRegistry.ENTITY_TYPE, new ResourceLocation(MOD_ID, "turtle_player"),
                 EntityType.Builder.<TurtlePlayer>createNothing(MobCategory.MISC).noSave().noSummon().sized(0, 0).build(ComputerCraft.MOD_ID + ":turtle_player"));
 
         static {

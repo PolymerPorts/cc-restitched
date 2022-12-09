@@ -41,11 +41,6 @@ public class ItemTreasureDisk extends Item implements IMedia, PolymerAutoTexture
     }
 
     @Override
-    public void fillItemCategory( @Nonnull CreativeModeTab group, @Nonnull NonNullList<ItemStack> stacks )
-    {
-    }
-
-    @Override
     public void appendHoverText( @Nonnull ItemStack stack, @Nullable Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag tooltipOptions )
     {
         String label = getTitle( stack );

@@ -5,12 +5,10 @@
  */
 package dan200.computercraft.shared.turtle.upgrades;
 
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.ComputerCraftTags;
 import dan200.computercraft.api.turtle.*;
-import dan200.computercraft.fabric.mixininterface.IMatrix4f;
 import dan200.computercraft.shared.TurtlePermissions;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.turtle.core.TurtlePlaceCommand;
@@ -45,6 +43,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -272,18 +271,25 @@ public class TurtleTool extends AbstractTurtleUpgrade
 
     private static class Transforms
     {
-        static final Transformation leftTransform = getMatrixFor( -0.40625f );
-        static final Transformation rightTransform = getMatrixFor( 0.40625f );
+        static final Transformation leftTransformGui = getMatrixFor( -0.40625f, false );
+        static final Transformation rightTransformGui = getMatrixFor( 0.40625f, false );
+        static final Transformation leftTransform = getMatrixFor( -0.40625f, true );
+        static final Transformation rightTransform = getMatrixFor( 0.40625f, true );
 
-        private static Transformation getMatrixFor( float offset )
+        private static Transformation getMatrixFor( float offset, boolean inWorld )
         {
             Matrix4f matrix = new Matrix4f();
-            ((IMatrix4f) (Object) matrix).setFloatArray( new float[] {
+
+            float[] floats = new float[] {
                 0.0f, 0.0f, -1.0f, 1.0f + offset,
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, -1.0f, 0.0f, 1.0f,
                 0.0f, 0.0f, 0.0f, 1.0f,
-            } );
+            };
+
+            if ( inWorld ) matrix.setTransposed( floats );
+            else matrix.set( floats );
+
             return new Transformation( matrix );
         }
     }

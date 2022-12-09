@@ -15,7 +15,6 @@ import dan200.computercraft.shared.common.IColouredItem;
 import dan200.computercraft.shared.util.Colour;
 import eu.pb4.polymer.api.item.PolymerItem;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,16 +46,6 @@ public class ItemDisk extends Item implements IMedia, IColouredItem, PolymerAuto
         Registry.ModItems.DISK.setLabel( stack, label );
         IColouredItem.setColourBasic( stack, colour );
         return stack;
-    }
-
-    @Override
-    public void fillItemCategory( @Nonnull CreativeModeTab tabs, @Nonnull NonNullList<ItemStack> list )
-    {
-        if( !allowedIn( tabs ) ) return;
-        for( int colour = 0; colour < 16; colour++ )
-        {
-            list.add( createFromIDAndColour( -1, null, Colour.VALUES[colour].getHex() ) );
-        }
     }
 
     @Override
