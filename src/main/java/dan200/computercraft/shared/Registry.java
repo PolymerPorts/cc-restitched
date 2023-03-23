@@ -274,11 +274,11 @@ public final class Registry {
         private static final CreativeModeTab mainItemGroup = PolymerItemGroupUtils.builder( new ResourceLocation( MOD_ID, "main" ) )
             .title(Component.translatable("itemGroup.computercraft.main"))
             .icon( () -> new ItemStack( ModBlocks.COMPUTER_NORMAL ) )
-            .displayItems( ( featureFlagSet, output, operator ) -> {
+            .displayItems( ( parameters, output ) -> {
                 output.accept( COMPUTER_NORMAL );
                 output.accept( COMPUTER_ADVANCED );
 
-                if ( operator )
+                if ( parameters.hasPermissions() )
                 {
                     output.accept( COMPUTER_COMMAND );
                 }

@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -45,7 +46,7 @@ public final class ImpostorShapelessRecipe extends ShapelessRecipe implements Po
 
     @Nonnull
     @Override
-    public ItemStack assemble( @Nonnull CraftingContainer inventory )
+    public ItemStack assemble( @Nonnull CraftingContainer inventory, RegistryAccess registryAccess )
     {
         return ItemStack.EMPTY;
     }
@@ -109,7 +110,7 @@ public final class ImpostorShapelessRecipe extends ShapelessRecipe implements Po
             buffer.writeVarInt( recipe.getIngredients().size() );
 
             for( Ingredient ingredient : recipe.getIngredients() ) ingredient.toNetwork( buffer );
-            buffer.writeItem( recipe.getResultItem() );
+            buffer.writeItem( recipe.getResultItem(null) );
         }
     };
 }

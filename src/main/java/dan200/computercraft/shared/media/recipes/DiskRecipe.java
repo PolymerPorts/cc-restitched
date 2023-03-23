@@ -11,6 +11,7 @@ import dan200.computercraft.shared.util.ColourTracker;
 import dan200.computercraft.shared.util.ColourUtils;
 import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeColor;
@@ -65,7 +66,7 @@ public class DiskRecipe extends CustomRecipe implements PolymerRecipe
 
     @Nonnull
     @Override
-    public ItemStack assemble( @Nonnull CraftingContainer inv )
+    public ItemStack assemble( @Nonnull CraftingContainer inv, RegistryAccess registryAccess)
     {
         ColourTracker tracker = new ColourTracker();
 
@@ -93,7 +94,7 @@ public class DiskRecipe extends CustomRecipe implements PolymerRecipe
 
     @Nonnull
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(RegistryAccess registryAccess)
     {
         return ItemDisk.createFromIDAndColour( -1, null, Colour.BLUE.getHex() );
     }

@@ -74,7 +74,7 @@ public abstract class ComputerFamilyRecipe extends ComputerConvertRecipe impleme
             buf.writeVarInt( recipe.getHeight() );
             buf.writeUtf( recipe.getGroup() );
             for( Ingredient ingredient : recipe.getIngredients() ) ingredient.toNetwork( buf );
-            buf.writeItem( recipe.getResultItem() );
+            buf.writeItem( recipe.getResultItem(null) );
             buf.writeEnum( recipe.getFamily() );
         }
     }

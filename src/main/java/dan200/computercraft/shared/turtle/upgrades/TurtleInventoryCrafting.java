@@ -84,7 +84,7 @@ public class TurtleInventoryCrafting extends CraftingContainer
         ArrayList<ItemStack> results = new ArrayList<>();
         for( int i = 0; i < maxCount && recipe.matches( this, world ); i++ )
         {
-            ItemStack result = recipe.assemble( this );
+            ItemStack result = recipe.assemble( this, world.registryAccess() );
             if( result.isEmpty() ) break;
             results.add( result );
 

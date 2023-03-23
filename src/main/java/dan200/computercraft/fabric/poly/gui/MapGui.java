@@ -29,6 +29,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -36,6 +37,8 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.EnumSet;
 
 public class MapGui extends HotbarGui {
     private static final Packet<?> COMMAND_PACKET;
@@ -135,8 +138,7 @@ public class MapGui extends HotbarGui {
             this.player.connection.send(new ClientboundRemoveEntitiesPacket(this.additionalEntities));
         }
         this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE, this.player.gameMode.getGameModeForPlayer().getId()));
-        this.player.connection.send(new ClientboundTeleportEntityPacket(this.player));
-
+        this.player.connection.send(new ClientboundPlayerPositionPacket(player.getX(), player.getY(), player.getZ(), player.getXRot(), player.getYRot(), EnumSet.noneOf(RelativeMovement.class), 0));
         super.onClose();
     }
 
@@ -154,16 +156,15 @@ public class MapGui extends HotbarGui {
 
     public void onCameraMove(float xRot, float yRot) {
         this.mouseMoves++;
-
-        if (this.mouseMoves < 16) {
+        if (this.mouseMoves < 2) {
             return;
         }
 
         this.xRot = xRot;
         this.yRot = yRot;
 
-        this.cursorX = this.cursorX + (int) ((xRot > 0.3 ? 3 : xRot < -0.3 ? -3 : 0) * (Math.abs(xRot) - 0.3));
-        this.cursorY = this.cursorY + (int) ((yRot > 0.3 ? 3 : yRot < -0.3 ? -3 : 0) * (Math.abs(yRot) - 0.3));
+        this.cursorX = this.cursorX + (int) ((xRot > 0.3 ? 6 : xRot < -0.3 ? -6 : 0) * (Math.abs(xRot) - 0.3));
+        this.cursorY = this.cursorY + (int) ((yRot > 0.3 ? 6 : yRot < -0.3 ? -6 : 0) * (Math.abs(yRot) - 0.3));
 
         this.cursorX = Mth.clamp(this.cursorX, 5, this.canvas.getWidth() * 2 - 5);
         this.cursorY = Mth.clamp(this.cursorY, 5, this.canvas.getHeight() * 2 - 5);

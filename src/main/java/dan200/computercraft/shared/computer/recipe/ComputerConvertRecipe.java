@@ -8,6 +8,7 @@ package dan200.computercraft.shared.computer.recipe;
 import dan200.computercraft.shared.computer.items.IComputerItem;
 import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -49,7 +50,7 @@ public abstract class ComputerConvertRecipe extends ShapedRecipe implements Poly
 
     @Nonnull
     @Override
-    public ItemStack assemble( @Nonnull CraftingContainer inventory )
+    public ItemStack assemble( @Nonnull CraftingContainer inventory, RegistryAccess registryAccess )
     {
         // Find our computer item and convert it.
         for( int i = 0; i < inventory.getContainerSize(); i++ )

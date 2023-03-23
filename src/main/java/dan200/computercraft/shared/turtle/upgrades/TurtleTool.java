@@ -155,7 +155,7 @@ public class TurtleTool extends AbstractTurtleUpgrade
                 float damage = (float) turtlePlayer.getAttributeValue( Attributes.ATTACK_DAMAGE ) * damageMulitiplier;
                 if( damage > 0.0f )
                 {
-                    DamageSource source = DamageSource.playerAttack( turtlePlayer );
+                    DamageSource source = world.damageSources().playerAttack( turtlePlayer );
                     if( hitEntity instanceof ArmorStand )
                     {
                         // Special case for armor stands: attack twice to guarantee destroy

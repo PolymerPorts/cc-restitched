@@ -7,8 +7,7 @@ import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import fr.catcore.server.translations.api.LocalizationTarget;
-import fr.catcore.server.translations.api.text.LocalizableText;
+import xyz.nucleoid.server.translations.api.Localization;
 
 public class TurtleInventoryView extends ScreenElement {
     private final ComputerGui gui;
@@ -54,7 +53,7 @@ public class TurtleInventoryView extends ScreenElement {
                 text = "[Empty]";
                 canvasColor = turtle.getAccess().getSelectedSlot() == i ? CanvasColor.YELLOW_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
             } else {
-                var name = LocalizableText.asLocalizedFor(item.getHoverName(), (LocalizationTarget) this.gui.getPlayer()).getString();
+                var name = Localization.text(item.getHoverName(), this.gui.getPlayer()).getString();
 
                 if (name.length() > 18) {
                     var delta = ((this.gui.getPlayer().tickCount / 10) % (name.length() - 18));

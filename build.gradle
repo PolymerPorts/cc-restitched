@@ -23,7 +23,7 @@ tasks.withType(JavaExec).configureEach {
     }
 }
 
-version = project.mod_version + "-polymerport." + project.sub_version
+version = project.mod_version
 
 group = "dan200.computercraft"
 archivesBaseName = "cc-restitched"
@@ -78,7 +78,7 @@ repositories {
     // TODO: Limit these to a set of groups.
     maven { url "https://maven.terraformersmc.com/" }
     maven { url = "https://maven.nucleoid.xyz" }
-    //mavenLocal()
+    mavenLocal()
 }
 
 configurations {
@@ -131,12 +131,13 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-reflect:1.6.0'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
 
-    modImplementation include("eu.pb4:sgui:1.2.0+1.19.3")
-    modImplementation include("eu.pb4:hologram-api:0.2.3+1.19.3")
-    modImplementation include("eu.pb4:polymer-core:0.3.0-rc.3+1.19.3")
-    modImplementation include("eu.pb4:polymer-resource-pack:0.3.0-rc.3+1.19.3")
-    modImplementation include("fr.catcore:server-translations-api:1.4.18+1.19.2")
-    modImplementation include("eu.pb4:map-canvas-api:0.2.1+1.19.3")
+    modImplementation include("eu.pb4:sgui:1.2.1+1.19.3")
+    modImplementation include("eu.pb4:polymer-core:0.4.1+1.19.4")
+    modImplementation include("eu.pb4:polymer-virtual-entity:0.4.1+1.19.4")
+    modImplementation include("eu.pb4:polymer-resource-pack:0.4.1+1.19.4")
+
+    modImplementation include("xyz.nucleoid:server-translations-api:2.0.0-beta.2+1.19.4-pre2")
+    modImplementation include("eu.pb4:map-canvas-api:0.2.2+1.19.4")
 }
 
 processResources {

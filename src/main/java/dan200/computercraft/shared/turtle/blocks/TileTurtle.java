@@ -6,15 +6,13 @@
 package dan200.computercraft.shared.turtle.blocks;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.datafixers.util.Pair;
 import dan200.computercraft.ComputerCraft;
 import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.core.computer.ComputerSide;
-import dan200.computercraft.fabric.mixin.poly.ArmorStandAccessor;
 import dan200.computercraft.fabric.poly.ComputerDisplayAccess;
-import dan200.computercraft.fabric.poly.textures.HeadTextures;
+import dan200.computercraft.fabric.poly.TurtleModel;
 import dan200.computercraft.shared.common.TileGeneric;
 import dan200.computercraft.shared.computer.blocks.ComputerProxy;
 import dan200.computercraft.shared.computer.blocks.TileComputerBase;
@@ -25,26 +23,18 @@ import dan200.computercraft.shared.turtle.apis.TurtleAPI;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.util.*;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import eu.pb4.polymer.core.api.utils.PolymerUtils;
+import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -72,11 +62,14 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
     private final NonNullList<ItemStack> inventory = NonNullList.withSize( INVENTORY_SIZE, ItemStack.EMPTY );
     private final NonNullList<ItemStack> previousInventory = NonNullList.withSize( INVENTORY_SIZE, ItemStack.EMPTY );
     private boolean inventoryChanged = false;
-    private TurtleBrain brain = new TurtleBrain( this );
+    public TurtleBrain brain = new TurtleBrain( this );
     private MoveState moveState = MoveState.NOT_MOVED;
 
     @Nullable
     public TurtleModel model = null;
+    @Nullable
+    public HolderAttachment attachment;
+
 
     public TileTurtle( BlockEntityType<? extends TileGeneric> type, BlockPos pos, BlockState state, ComputerFamily family )
     {
@@ -146,17 +139,8 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
             super.unload();
         }
 
-        if (this.model != null) {
-            for (var player : this.model.watchers) {
-                player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.main.getId(), this.model.color.getId()));
-                if (this.model.right != null) {
-                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.right.getId()));
-                }
-
-                if (this.model.left != null) {
-                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.model.left.getId()));
-                }
-            }
+        if (this.attachment != null) {
+            this.attachment.destroy();
         }
     }
 
@@ -233,16 +217,14 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
         brain.update();
 
         if (this.model == null && this.moveState == MoveState.NOT_MOVED) {
-            this.model = new TurtleModel(this.createProxy());
-            this.model.setPos(Vec3.atBottomCenterOf(this.getBlockPos()), this.getDirection());
+            this.model = new TurtleModel(this.createProxy(), this.getDirection());
+            this.attachment = ChunkAttachment.of(this.model, (ServerLevel) this.level, this.getBlockPos());
         }
 
         if (this.model != null) {
             this.model.tick();
 
-            if (this.model.main.getYRot() != this.getDirection().toYRot()) {
-                this.model.setPos(Vec3.atBottomCenterOf(this.getBlockPos()), this.getDirection());
-            }
+            this.model.setDirection(this.getDirection());
         }
 
         if( inventoryChanged )
@@ -585,194 +567,16 @@ public class TileTurtle extends TileComputerBase implements ITurtleTile, Default
         brain.setOwner( this );
 
         this.model = copy.model;
-        this.model.setPos(Vec3.atBottomCenterOf(this.getBlockPos()), this.getDirection());
+        this.model.setDirection(this.getDirection());
+        this.attachment = ChunkAttachment.of(this.model, (ServerLevel) this.level, this.getBlockPos());
         // Mark the other turtle as having moved, and so its peripheral is dead.
         copy.moveState = MoveState.MOVED;
+        copy.attachment.destroy();
         copy.model = null;
     }
 
     @Override
     public ComputerDisplayAccess getDisplayAccess() {
         return this.createProxy();
-    }
-
-    public static class TurtleModel {
-
-        private final ComputerProxy proxy;
-        private final ArmorStand main;
-        private final ArmorStand color;
-        @Nullable
-        private final ArmorStand right;
-        @Nullable
-        private final ArmorStand left;
-
-        private final Set<ServerPlayer> watchers = new HashSet<>();
-
-        public TurtleModel(ComputerProxy proxy) {
-            this.proxy = proxy;
-            this.main = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
-            this.main.setNoGravity(true);
-            this.main.setInvisible(true);
-            var stack = new ItemStack(Items.PLAYER_HEAD);
-            stack.getOrCreateTag().put("SkullOwner", PolymerUtils.createSkullOwner(this.proxy.getBlockEntity().getFamily() == ComputerFamily.ADVANCED ? HeadTextures.ADVANCED_TURTLE : HeadTextures.TURTLE));
-            this.main.setItemSlot(EquipmentSlot.HEAD, stack);
-
-            this.color = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
-            this.color.setNoGravity(true);
-            this.color.setInvisible(true);
-            ((ArmorStandAccessor) this.color).callSetSmall(true);
-            this.setColor(((TileTurtle) proxy.getBlockEntity()).brain.getDyeColour());
-
-            var rightUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.RIGHT);
-            if (rightUpgrade != null) {
-                this.right = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
-                this.right.setNoGravity(true);
-                this.right.setInvisible(true);
-                ((ArmorStandAccessor) this.right).callSetSmall(rightUpgrade.getCraftingItem().getItem() instanceof BlockItem);
-                this.right.setItemSlot(EquipmentSlot.HEAD, rightUpgrade.getCraftingItem().copy());
-            } else {
-                this.right = null;
-            }
-
-
-            var leftUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.LEFT);
-            if (leftUpgrade != null) {
-                this.left = new ArmorStand(EntityType.ARMOR_STAND, PolymerUtils.getFakeWorld());
-                this.left.setNoGravity(true);
-                this.left.setInvisible(true);
-                ((ArmorStandAccessor) this.left).callSetSmall(leftUpgrade.getCraftingItem().getItem() instanceof BlockItem);
-                this.left.setItemSlot(EquipmentSlot.HEAD, leftUpgrade.getCraftingItem().copy());
-            } else {
-                this.left = null;
-            }
-        }
-
-        public void tick() {
-            boolean active = this.proxy.getBlockEntity() != null;
-
-            for (var player : new ArrayList<>(this.watchers)) {
-                if (player.isRemoved()) {
-                    this.watchers.remove(player);
-                } else if (active && player.getEyePosition().distanceToSqr(this.main.getEyePosition()) > 48*48) {
-                    player.connection.send(new ClientboundRemoveEntitiesPacket(this.main.getId(), this.color.getId()));
-                    if (this.right != null) {
-                        player.connection.send(new ClientboundRemoveEntitiesPacket(this.right.getId()));
-                    }
-                    if (this.left != null) {
-                        player.connection.send(new ClientboundRemoveEntitiesPacket(this.left.getId()));
-                    }
-                    this.watchers.remove(player);
-                }
-            }
-
-            if (active) {
-                for (var player : ((ServerLevel) this.proxy.getBlockEntity().getLevel()).getPlayers((player) -> player.getEyePosition().distanceToSqr(this.main.getEyePosition()) < 48*48)) {
-                    if (this.watchers.add(player)) {
-                        player.connection.send(this.main.getAddEntityPacket());
-                        player.connection.send(new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData().getNonDefaultValues()));
-                        player.connection.send(new ClientboundSetEquipmentPacket(this.main.getId(),
-                            List.of(Pair.of(EquipmentSlot.HEAD, this.main.getItemBySlot(EquipmentSlot.HEAD)))));
-
-                        player.connection.send(this.color.getAddEntityPacket());
-                        player.connection.send(new ClientboundSetEntityDataPacket(this.color.getId(), this.color.getEntityData().getNonDefaultValues()));
-                        player.connection.send(new ClientboundSetEquipmentPacket(this.color.getId(),
-                            List.of(Pair.of(EquipmentSlot.HEAD, this.color.getItemBySlot(EquipmentSlot.HEAD)))));
-
-                        if (this.right != null) {
-                            player.connection.send(this.right.getAddEntityPacket());
-                            player.connection.send(new ClientboundSetEntityDataPacket(this.right.getId(), this.right.getEntityData().getNonDefaultValues()));
-                            player.connection.send(new ClientboundSetEquipmentPacket(this.right.getId(),
-                                List.of(Pair.of(EquipmentSlot.HEAD, this.right.getItemBySlot(EquipmentSlot.HEAD)))));
-                        }
-
-                        if (this.left != null) {
-                            player.connection.send(this.left.getAddEntityPacket());
-                            player.connection.send(new ClientboundSetEntityDataPacket(this.left.getId(), this.left.getEntityData().getNonDefaultValues()));
-                            player.connection.send(new ClientboundSetEquipmentPacket(this.left.getId(),
-                                List.of(Pair.of(EquipmentSlot.HEAD, this.left.getItemBySlot(EquipmentSlot.HEAD)))));
-                        }
-                    }
-                }
-            }
-        }
-
-        public void updateName(String name) {
-            var set = (name == null || name.isEmpty());
-            this.main.setCustomNameVisible(!(set));
-            this.main.setCustomName(set ? null : Component.literal(name));
-            var packet = new ClientboundSetEntityDataPacket(this.main.getId(), this.main.getEntityData().packDirty());
-
-            for (var player : this.watchers) {
-                player.connection.send(packet);
-            }
-        }
-
-        public void setColor(DyeColor color) {
-            if (color == null) {
-                this.color.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
-            } else {
-                this.color.setItemSlot(EquipmentSlot.HEAD, BuiltInRegistries.ITEM.get(new ResourceLocation(color.getName() + "_wool")).getDefaultInstance());
-            }
-
-            var packet = new ClientboundSetEquipmentPacket(this.color.getId(),
-                List.of(Pair.of(EquipmentSlot.HEAD, this.color.getItemBySlot(EquipmentSlot.HEAD))));
-
-            for (var player : this.watchers) {
-                player.connection.send(packet);
-            }
-        }
-
-        public void setPos(Vec3 pos, Direction direction) {
-            this.main.setPos(pos.add(0, -1.4, 0));
-            this.main.setYRot(direction.toYRot());
-
-            this.color.setPos(pos.add(0, -0.45, 0));
-            this.color.setYRot(direction.toYRot());
-
-            Packet<ClientGamePacketListener> right;
-            Packet<ClientGamePacketListener> left;
-
-            if (this.right != null) {
-                if (this.right.isSmall()) {
-                    this.right.setPos(pos.add(direction.getStepZ() * -0.3, -0.4, direction.getStepX() * 0.3));
-                } else {
-                    this.right.setPos(pos.add(direction.getStepZ() * -0.65, -1.7, direction.getStepX() * 0.65));
-                }
-                this.right.setYRot(direction.getClockWise().toYRot());
-
-                right = new ClientboundTeleportEntityPacket(this.right);
-            } else {
-                right = null;
-            }
-
-            if (this.left != null) {
-                if (this.left.isSmall()) {
-                    this.left.setPos(pos.add(direction.getStepZ() * 0.3, -0.4, direction.getStepX() * -0.3));
-                    this.left.setYRot(direction.getCounterClockWise().toYRot());
-                } else {
-                    this.left.setPos(pos.add(direction.getStepZ() * 0.1, -1.7, direction.getStepX() * -0.1));
-                    this.left.setYRot(direction.getClockWise().toYRot());
-                }
-
-                left = new ClientboundTeleportEntityPacket(this.left);
-            } else {
-                left = null;
-            }
-
-            var packet = new ClientboundTeleportEntityPacket(this.main);
-            var packet2 = new ClientboundTeleportEntityPacket(this.color);
-            for (var player : this.watchers) {
-                player.connection.send(packet);
-                player.connection.send(packet2);
-
-                if (right != null) {
-                    player.connection.send(right);
-                }
-
-                if (left != null) {
-                    player.connection.send(left);
-                }
-            }
-        }
     }
 }

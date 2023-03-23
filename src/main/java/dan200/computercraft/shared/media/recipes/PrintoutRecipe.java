@@ -7,6 +7,7 @@ package dan200.computercraft.shared.media.recipes;
 
 import dan200.computercraft.shared.media.items.ItemPrintout;
 import eu.pb4.polymer.core.api.item.PolymerRecipe;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +36,7 @@ public final class PrintoutRecipe extends CustomRecipe implements PolymerRecipe
 
     @Nonnull
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(RegistryAccess registryAccess)
     {
         return ItemPrintout.createMultipleFromTitleAndText( null, null, null );
     }
@@ -43,12 +44,12 @@ public final class PrintoutRecipe extends CustomRecipe implements PolymerRecipe
     @Override
     public boolean matches( @Nonnull CraftingContainer inventory, @Nonnull Level world )
     {
-        return !assemble( inventory ).isEmpty();
+        return !assemble( inventory, world.registryAccess() ).isEmpty();
     }
 
     @Nonnull
     @Override
-    public ItemStack assemble( @Nonnull CraftingContainer inventory )
+    public ItemStack assemble( @Nonnull CraftingContainer inventory, RegistryAccess registryAccess )
     {
         // See if we match the recipe, and extract the input disk ID and dye colour
         int numPages = 0;

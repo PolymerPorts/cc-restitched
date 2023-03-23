@@ -30,7 +30,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -121,14 +123,14 @@ public class TileMonitor extends TileGeneric implements IPeripheralTile
             }
 
             this.canvas = DrawableCanvas.create(this.width, this.height);
-            this.display = VirtualDisplay.of(this.canvas, blockPos, dir, rotation, true, this::onClick);
+            this.display = VirtualDisplay.builder(this.canvas, blockPos, dir).rotation(Rotation.values()[rotation]).glowing(true).invisible().raycast().callback(this::onClick).build();
             this.updateDisplay();
         }
     }
 
-    private void onClick(ServerPlayer player, int x, int y) {
+    private void onClick(ServerPlayer player, ClickAction action, int x, int y) {
         var monitor = this.getServerMonitor();
-        if (monitor != null) {
+        if (monitor != null && action == ClickAction.SECONDARY) {
             x = (x - 20) / Fonts.FONT_WIDTH / monitor.getTextScale();
             y = (y - 21) / Fonts.FONT_HEIGHT / monitor.getTextScale();
             if (x >= 0 && y >= 0 && x < monitor.getTerminal().getWidth() && y < monitor.getTerminal().getHeight()) {

@@ -8,6 +8,7 @@ package dan200.computercraft.shared.util;
 import com.google.gson.JsonObject;
 import eu.pb4.polymer.core.api.item.PolymerRecipe;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -46,7 +47,7 @@ public final class ImpostorRecipe extends ShapedRecipe implements PolymerRecipe
 
     @Nonnull
     @Override
-    public ItemStack assemble( @Nonnull CraftingContainer inventory )
+    public ItemStack assemble( @Nonnull CraftingContainer inventory, RegistryAccess registryAccess )
     {
         return ItemStack.EMPTY;
     }
@@ -90,7 +91,7 @@ public final class ImpostorRecipe extends ShapedRecipe implements PolymerRecipe
             buf.writeVarInt( recipe.getHeight() );
             buf.writeUtf( recipe.getGroup() );
             for( Ingredient ingredient : recipe.getIngredients() ) ingredient.toNetwork( buf );
-            buf.writeItem( recipe.getResultItem() );
+            buf.writeItem( recipe.getResultItem(null) );
         }
     };
 }
